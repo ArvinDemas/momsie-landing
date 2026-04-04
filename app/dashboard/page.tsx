@@ -103,7 +103,7 @@ export default function DashboardPage() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
-              <YAxis domain={[0, 600]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280', tabularNums: true }} dx={-10} />
+              <YAxis domain={[0, 600]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280', style: { fontVariantNumeric: 'tabular-nums' } }} dx={-10} />
               <RechartsTooltip 
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 itemStyle={{ color: '#111827', fontWeight: 'bold' }}
@@ -156,7 +156,7 @@ export default function DashboardPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData} layout="vertical" margin={{ top: 0, right: 30, left: 30, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280', tabularNums: true }} />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280', style: { fontVariantNumeric: 'tabular-nums' } }} />
                 <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#111827', fontWeight: 500 }} dx={-10} />
                 <RechartsTooltip 
                   cursor={{ fill: '#f3f4f6' }}

@@ -39,7 +39,7 @@ Momsie menghubungkan ibu hamil dengan doula bersertifikat di seluruh Indonesia. 
     category: "Doula",
     date: "28 Mei 2026",
     readTime: "5 menit",
-    thumbnail: "/img landing page.png",
+    thumbnail: "/artikel/1.png",
     author: "Tim Momsie",
   },
   {
@@ -73,7 +73,7 @@ Jika mual di trimester pertama mengganggu, konsumsi suplemen prenatal di malam h
     category: "Nutrisi",
     date: "20 Mei 2026",
     readTime: "6 menit",
-    thumbnail: "/img landing page.png",
+    thumbnail: "/artikel/2.png",
     author: "Tim Momsie",
   },
   {
@@ -110,7 +110,7 @@ Konsultasikan birth plan dengan dokter kandungan dan doula pendampingmu melalui 
     category: "Persalinan",
     date: "12 Mei 2026",
     readTime: "8 menit",
-    thumbnail: "/img landing page.png",
+    thumbnail: "/artikel/3.png",
     author: "Tim Momsie",
   },
   {
@@ -149,7 +149,7 @@ Gunakan Kalkulator Kehamilan Momsie untuk menghitung usia kehamilan dan HPL otom
     category: "Kehamilan",
     date: "5 Mei 2026",
     readTime: "5 menit",
-    thumbnail: "/img landing page.png",
+    thumbnail: "/artikel/4.png",
     author: "Tim Momsie",
   },
   {
@@ -187,7 +187,7 @@ Pastikan doula pendampingmu memahami dan mendukung rencana IMD-mu. Temukan doula
     category: "Bayi",
     date: "28 April 2026",
     readTime: "5 menit",
-    thumbnail: "/img landing page.png",
+    thumbnail: "/artikel/5.png",
     author: "Tim Momsie",
   },
   {
@@ -233,7 +233,7 @@ Water birth di Indonesia dapat dilakukan di klinik bersalin atau rumah sakit ter
     category: "Persalinan",
     date: "15 April 2026",
     readTime: "7 menit",
-    thumbnail: "/img landing page.png",
+    thumbnail: "/artikel/6.png",
     author: "Tim Momsie",
   },
 ]

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Instagram, Youtube, Twitter } from "lucide-react"
+import { Instagram, Mail, Tiktok } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -39,17 +39,11 @@ export default function Footer() {
           <div>
             <h4 className="font-bold text-slate-900 mb-6">Hubungi Kami</h4>
             <ul className="space-y-3 text-sm text-slate-600">
-              <li className="flex items-start">
-                <span className="mr-2">📍</span>
-                <span className="leading-relaxed">Jalan Gabus No. 8c, Maguwoharjo, Depok, Sleman, DI Yogyakarta, 55281</span>
-              </li>
               <li className="flex items-center">
-                <span className="mr-2">📞</span>
-                <span>+62 813 7367 3251 (Vance)</span>
-              </li>
-              <li className="flex items-center">
-                <span className="mr-2">✉️</span>
-                <span>vancebrian1727@gmail.com</span>
+                <Mail className="size-4 mr-2 text-slate-400" />
+                <a href="mailto:momsiereborn@gmail.com" className="hover:text-pink-500 transition-colors">
+                  momsiereborn@gmail.com
+                </a>
               </li>
             </ul>
           </div>
@@ -63,12 +57,8 @@ export default function Footer() {
                 <span className="sr-only">Instagram</span>
               </a>
               <a href="#" className="size-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-colors">
-                <Youtube className="size-5" />
-                <span className="sr-only">YouTube</span>
-              </a>
-              <a href="#" className="size-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-colors">
-                <Twitter className="size-5" /> {/* Note: Assuming TikTok or Twitter, using Twitter icon as placeholder */}
-                <span className="sr-only">TikTok/Twitter</span>
+                <Tiktok className="size-5" />
+                <span className="sr-only">TikTok</span>
               </a>
             </div>
             <p className="mt-4 text-sm font-medium text-pink-500">

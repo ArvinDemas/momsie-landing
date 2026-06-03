@@ -14,7 +14,11 @@ export default function Sidebar({ className }: { className?: string }) {
   return (
     <aside className={cn("flex flex-col border-r bg-card px-4 py-6", className)}>
       <div className="mb-8 flex items-center gap-2 px-2">
-        <div className="size-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">M</div>
+        <img
+          src="/Logo Momsie.png"
+          alt="Momsie Logo"
+          className="h-9 w-9 object-contain"
+        />
         <span className="text-2xl font-bold tracking-tight text-primary">Momsie</span>
       </div>
       <nav className="flex flex-col gap-2">

@@ -19,7 +19,9 @@ export default function LandingPage() {
         <USP />
         <B2BPartnership />
       </main>
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   )
 }

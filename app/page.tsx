@@ -8,6 +8,7 @@ import Footer from "@/components/landing/footer"
 import AnimatedBackground from "@/components/landing/animated-background"
 import ArticlesSection from "@/components/landing/articles"
 import CalculatorCTA from "@/components/landing/calculator-cta"
+import GameCTA from "@/components/landing/game-cta"
 
 export default function LandingPage() {
   return (
@@ -21,6 +22,7 @@ export default function LandingPage() {
         <USP />
         <B2BPartnership />
         <CalculatorCTA />
+        <GameCTA />
         <ArticlesSection />
       </main>
       <div className="relative z-10">

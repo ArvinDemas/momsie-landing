@@ -76,6 +76,17 @@ export default function Header() {
             Kalkulator
           </Link>
           <Link
+            href="/game"
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all",
+              pathname.startsWith("/game")
+                ? "bg-pink-500 text-white shadow-sm"
+                : "bg-pink-100 text-pink-600 hover:bg-pink-200"
+            )}
+          >
+            🎮 Mini Game
+          </Link>
+          <Link
             href="/#contact"
             className="hover:text-pink-500 transition-colors text-slate-600"
           >

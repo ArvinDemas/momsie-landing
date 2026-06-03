@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Instagram, Mail, Tiktok } from "lucide-react"
+import { Instagram, Mail } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -57,7 +57,9 @@ export default function Footer() {
                 <span className="sr-only">Instagram</span>
               </a>
               <a href="#" className="size-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200 transition-colors">
-                <Tiktok className="size-5" />
+                <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.59 4.23.97 1.2 2.27 2.05 3.71 2.42v3.75c-1.39-.16-2.73-.77-3.79-1.69-.97-.83-1.68-1.95-2.02-3.19v7.87c.1 1.76-.32 3.52-1.2 5-.94 1.54-2.39 2.72-4.08 3.32-1.95.73-4.14.73-6.09.01-1.89-.66-3.48-2.01-4.44-3.77A9.453 9.453 0 0 1 0 13.06c0-2.37.95-4.63 2.65-6.28 1.63-1.6 3.86-2.52 6.17-2.54 1.1-.02 2.21.14 3.25.5v3.7c-.82-.44-1.75-.68-2.69-.69-1.23-.03-2.45.38-3.41 1.15A5.626 5.626 0 0 0 4.1 12.3c-.3 1.23-.15 2.53.43 3.65.52.99 1.34 1.79 2.34 2.29.98.51 2.09.73 3.19.64 1.25-.09 2.45-.69 3.29-1.63.85-.92 1.27-2.18 1.18-3.43V.02Z"/>
+                </svg>
                 <span className="sr-only">TikTok</span>
               </a>
             </div>

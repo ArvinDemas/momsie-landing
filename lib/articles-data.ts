@@ -52,18 +52,23 @@ Trimester pertama (0–12 minggu) adalah periode paling kritis dalam kehamilan. 
 ## Nutrisi Kritis yang Harus Dipenuhi
 
 ### 1. Asam Folat (Folate/Vitamin B9)
+
 **400–800 mcg per hari**. Mencegah cacat tabung saraf (neural tube defects) seperti spina bifida. Sumber: sayuran hijau gelap, kacang-kacangan, hati sapi.
 
 ### 2. Zat Besi
+
 **27 mg per hari**. Mendukung pembentukan hemoglobin dan mencegah anemia kehamilan. Sumber: daging merah, hati, bayam, tempe.
 
 ### 3. Kalsium
+
 **1.000 mg per hari**. Untuk pembentukan tulang dan gigi bayi. Jika asupan kurang, kalsium diambil dari tulang ibu. Sumber: susu, yogurt, keju, ikan teri.
 
 ### 4. Omega-3 (DHA)
+
 Mendukung perkembangan otak dan mata bayi. Sumber: ikan salmon, ikan sarden, biji chia.
 
 ### 5. Vitamin D
+
 Membantu penyerapan kalsium. Paparan sinar matahari pagi + susu fortifikasi.
 
 ## Tips Praktis
@@ -86,17 +91,21 @@ Persalinan normal (spontan pervaginam) adalah proses melahirkan yang paling alam
 ## Persiapan Fisik
 
 ### Senam Hamil
+
 Mulai dari usia kehamilan 28 minggu. Fokus pada latihan pernapasan, penguatan otot panggul (Kegel), dan posisi bayi yang optimal.
 
 ### Perineal Massage
+
 Mulai minggu ke-34. Pijat area perineum 5–10 menit setiap hari untuk meningkatkan elastisitas jaringan dan mengurangi risiko robekan saat melahirkan.
 
 ## Persiapan Mental
 
 ### Hypnobirthing
+
 Teknik relaksasi dan visualisasi yang terbukti mengurangi persepsi nyeri selama persalinan. Bisa dipelajari bersama doula atau melalui kelas prenatal.
 
 ### Birth Plan
+
 Dokumen tertulis yang menyatakan preferensimu: posisi melahirkan, penggunaan epidural, siapa yang boleh hadir, inisiasi menyusu dini, dan lain-lain.
 
 ## Perlengkapan yang Perlu Disiapkan (Minggu ke-36)
@@ -171,6 +180,7 @@ Segera setelah lahir, bayi berada dalam kondisi **alert state** — paling respo
 ## Kolostrum: Emas Bagi Bayi
 
 Cairan kekuningan yang keluar pertama kali ini mengandung:
+
 - **Immunoglobulin A (IgA)** — antibodi pelindung saluran cerna
 - **Lactoferrin** — antivirus dan antibakteri alami
 - **Faktor pertumbuhan** — mempercepat maturasi usus bayi
@@ -200,18 +210,21 @@ Water birth atau melahirkan di dalam air adalah metode persalinan di mana ibu me
 ## Manfaat Water Birth
 
 **Untuk Ibu:**
+
 - Air hangat merelaksasi otot dan mengurangi persepsi nyeri secara alami
 - Memudahkan pergerakan dan perubahan posisi
 - Tekanan air membantu mengurangi robekan perineum
 - Efek hidroterapi menurunkan tekanan darah
 
 **Untuk Bayi:**
+
 - Transisi lembut dari lingkungan amnion ke udara
 - Paparan trauma lahir yang lebih minimal
 
 ## Siapa yang Cocok?
 
 Water birth ideal untuk:
+
 - Kehamilan tunggal, presentasi kepala
 - Usia kehamilan 37–42 minggu
 - Kehamilan risiko rendah tanpa komplikasi
@@ -220,6 +233,7 @@ Water birth ideal untuk:
 ## Kontraindikasi
 
 Water birth sebaiknya tidak dilakukan jika ada:
+
 - Preeklampsia atau hipertensi dalam kehamilan
 - Kehamilan prematur (< 37 minggu)
 - Bayi sungsang

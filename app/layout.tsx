@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   title: "Momsie | Platform Layanan Doula & Ibu Hamil Cerdas",
   description: "Platform digital rekam medis, doula, dan layanan ibu hamil terlengkap di Indonesia.",
   icons: {
-    icon: "/Logo Momsie Nobg.png",
-    apple: "/Logo Momsie Nobg.png",
+    icon: "/Logo Momsie.png",
+    apple: "/Logo Momsie.png",
   },
 }
 

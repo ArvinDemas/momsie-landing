@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Clock, User, BookOpen } from "lucide-react"
 import { articles } from "@/lib/articles-data"
+import ProtectedRoute from "@/components/auth/protected-route"
 
 export function generateStaticParams() {
   return articles.map((a) => ({ slug: a.slug }))
@@ -66,7 +67,8 @@ export default function ArtikelDetailPage({ params }: { params: { slug: string }
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-white">
       {/* Nav */}
       <div className="bg-white border-b border-slate-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 md:px-6 py-4 flex items-center gap-4">
@@ -147,6 +149,7 @@ export default function ArtikelDetailPage({ params }: { params: { slug: string }
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }

@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Calendar, Baby, Info, ChevronDown, ChevronUp } from "lucide-react"
+import { Calendar, Baby, Info, ChevronDown, ChevronUp } from "lucide-react"
 import AnimatedBackground from "@/components/landing/animated-background"
+import Header from "@/components/landing/header"
+import ProtectedRoute from "@/components/auth/protected-route"
 
 function addDays(date: Date, days: number) {
   const d = new Date(date)
@@ -100,25 +102,12 @@ export default function KalkulatorPage() {
   const minDateStr = minDate.toISOString().split("T")[0]
 
   return (
-    <div className="min-h-screen bg-pink-50/30">
-      <AnimatedBackground />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-pink-50/30">
+        <AnimatedBackground />
+        <Header />
 
-      {/* Header */}
-      <div className="relative z-10 bg-white/80 backdrop-blur-md border-b border-pink-100 sticky top-0">
-        <div className="container mx-auto px-4 md:px-6 py-4 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-pink-600 transition-colors">
-            <ArrowLeft className="size-4" />
-            Beranda
-          </Link>
-          <div className="h-4 w-px bg-slate-200" />
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/Logo Momsie.png" alt="Momsie" className="h-7 w-7 object-contain" />
-            <span className="text-lg font-bold text-pink-600">Momsie</span>
-          </Link>
-        </div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 md:px-6 max-w-2xl py-12">
+        <div className="relative z-10 container mx-auto px-4 md:px-6 max-w-2xl pt-24 pb-12">
         {/* Title */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-pink-100 px-4 py-1.5 text-sm font-semibold text-pink-600 mb-4">
@@ -256,7 +245,8 @@ export default function KalkulatorPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }

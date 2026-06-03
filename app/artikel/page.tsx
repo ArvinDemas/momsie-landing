@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Search, Clock, BookOpen } from "lucide-react"
+import { Search, Clock, BookOpen } from "lucide-react"
 import { articles } from "@/lib/articles-data"
 import AnimatedBackground from "@/components/landing/animated-background"
+import Header from "@/components/landing/header"
+import ProtectedRoute from "@/components/auth/protected-route"
 
 const categories = ["Semua", "Kehamilan", "Bayi", "Nutrisi", "Doula", "Persalinan"]
 
@@ -27,25 +29,12 @@ export default function ArtikelPage() {
   })
 
   return (
-    <div className="min-h-screen bg-pink-50/30">
-      <AnimatedBackground />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-pink-50/30">
+        <AnimatedBackground />
+        <Header />
 
-      {/* Header */}
-      <div className="relative z-10 bg-white/80 backdrop-blur-md border-b border-pink-100 sticky top-0">
-        <div className="container mx-auto px-4 md:px-6 py-4 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-pink-600 transition-colors shrink-0">
-            <ArrowLeft className="size-4" />
-            Beranda
-          </Link>
-          <div className="h-4 w-px bg-slate-200" />
-          <Link href="/" className="flex items-center gap-2">
-            <img src="/Logo Momsie.png" alt="Momsie" className="h-7 w-7 object-contain" />
-            <span className="text-lg font-bold text-pink-600">Momsie</span>
-          </Link>
-        </div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 md:px-6 py-12">
+        <div className="relative z-10 container mx-auto px-4 md:px-6 pt-24 pb-12">
         {/* Page Title */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 rounded-full bg-pink-100 px-4 py-1.5 text-sm font-semibold text-pink-600 mb-4">
@@ -131,6 +120,7 @@ export default function ArtikelPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   )
 }

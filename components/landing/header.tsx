@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import UserMenu from "@/components/auth/user-menu"
 
 export default function Header() {
+  const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const { user, loading } = useAuth()
 
@@ -34,12 +36,51 @@ export default function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-          <Link href="#" className="text-pink-600 font-semibold">Beranda</Link>
-          <Link href="#about" className="hover:text-pink-500 transition-colors">Tentang Kami</Link>
-          <Link href="#features" className="hover:text-pink-500 transition-colors">Layanan</Link>
-          <Link href="/artikel" className="hover:text-pink-500 transition-colors">Artikel</Link>
-          <Link href="/kalkulator" className="hover:text-pink-500 transition-colors">Kalkulator</Link>
-          <Link href="#contact" className="hover:text-pink-500 transition-colors">Kontak</Link>
+          <Link
+            href="/"
+            className={cn(
+              "transition-colors hover:text-pink-500",
+              pathname === "/" ? "text-pink-600 font-semibold" : "text-slate-600"
+            )}
+          >
+            Beranda
+          </Link>
+          <Link
+            href="/#about"
+            className="hover:text-pink-500 transition-colors text-slate-600"
+          >
+            Tentang Kami
+          </Link>
+          <Link
+            href="/#features"
+            className="hover:text-pink-500 transition-colors text-slate-600"
+          >
+            Layanan
+          </Link>
+          <Link
+            href="/artikel"
+            className={cn(
+              "transition-colors hover:text-pink-500",
+              pathname.startsWith("/artikel") ? "text-pink-600 font-semibold" : "text-slate-600"
+            )}
+          >
+            Artikel
+          </Link>
+          <Link
+            href="/kalkulator"
+            className={cn(
+              "transition-colors hover:text-pink-500",
+              pathname.startsWith("/kalkulator") ? "text-pink-600 font-semibold" : "text-slate-600"
+            )}
+          >
+            Kalkulator
+          </Link>
+          <Link
+            href="/#contact"
+            className="hover:text-pink-500 transition-colors text-slate-600"
+          >
+            Kontak
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3">

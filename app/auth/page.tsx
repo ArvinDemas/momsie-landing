@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, AlertCircle, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 
 type Tab = "login" | "register"
 
-export default function AuthPage() {
+function AuthPageContent() {
   const [tab, setTab] = useState<Tab>("login")
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -19,6 +19,8 @@ export default function AuthPage() {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectPath = searchParams.get("redirect") || "/"
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth()
 
   const clearForm = () => {
@@ -55,7 +57,7 @@ export default function AuthPage() {
       } else {
         await signUpWithEmail(email, password, name.trim())
       }
-      router.push("/")
+      router.push(redirectPath)
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? ""
       setError(friendlyError(code))
@@ -69,7 +71,7 @@ export default function AuthPage() {
     setGoogleLoading(true)
     try {
       await signInWithGoogle()
-      router.push("/")
+      router.push(redirectPath)
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? ""
       setError(friendlyError(code))
@@ -244,5 +246,20 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-pink-50/50 flex items-center justify-center">
+        <div className="text-center animate-pulse">
+          <Loader2 className="size-8 animate-spin text-pink-500 mx-auto mb-3" />
+          <p className="text-sm font-semibold text-slate-600">Memuat...</p>
+        </div>
+      </div>
+    }>
+      <AuthPageContent />
+    </Suspense>
   )
 }

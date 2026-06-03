@@ -88,10 +88,8 @@ export default function Header() {
           <Link
             href="/game"
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all",
-              pathname.startsWith("/game")
-                ? "bg-pink-500 text-white shadow-sm"
-                : "bg-pink-100 text-pink-600 hover:bg-pink-200"
+              "transition-colors hover:text-pink-500",
+              pathname.startsWith("/game") ? "text-pink-600 font-semibold" : "text-slate-600"
             )}
           >
             Mini Game
@@ -197,10 +195,8 @@ export default function Header() {
                   href="/game"
                   onClick={closeMenu}
                   className={cn(
-                    "inline-flex items-center self-start gap-1.5 px-4.5 py-1.5 rounded-full text-xs font-bold transition-all",
-                    pathname.startsWith("/game")
-                      ? "bg-pink-500 text-white shadow-sm"
-                      : "bg-pink-100 text-pink-600 hover:bg-pink-200"
+                    "transition-colors hover:text-pink-500 py-1",
+                    pathname.startsWith("/game") ? "text-pink-600 font-semibold" : "text-slate-600"
                   )}
                 >
                   Mini Game

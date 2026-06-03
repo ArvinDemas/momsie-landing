@@ -3,9 +3,12 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth-context"
+import UserMenu from "@/components/auth/user-menu"
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
+  const { user, loading } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,19 +37,35 @@ export default function Header() {
           <Link href="#" className="text-pink-600 font-semibold">Beranda</Link>
           <Link href="#about" className="hover:text-pink-500 transition-colors">Tentang Kami</Link>
           <Link href="#features" className="hover:text-pink-500 transition-colors">Layanan</Link>
-          <Link href="#partnership" className="hover:text-pink-500 transition-colors">Kemitraan</Link>
+          <Link href="/artikel" className="hover:text-pink-500 transition-colors">Artikel</Link>
+          <Link href="/kalkulator" className="hover:text-pink-500 transition-colors">Kalkulator</Link>
           <Link href="#contact" className="hover:text-pink-500 transition-colors">Kontak</Link>
         </nav>
 
-        <div className="flex items-center gap-4">
-          <Link 
-            href="#download" 
-            className="hidden sm:inline-flex items-center justify-center rounded-xl bg-pink-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-600 hover:shadow-md transition-all active:scale-95"
-          >
-            Unduh Aplikasi
-          </Link>
+        <div className="flex items-center gap-3">
+          {!loading && (
+            user ? (
+              <UserMenu />
+            ) : (
+              <>
+                <Link
+                  href="/auth"
+                  className="hidden sm:inline-flex items-center justify-center rounded-xl border border-pink-300 px-4 py-2.5 text-sm font-semibold text-pink-600 hover:bg-pink-50 transition-all"
+                >
+                  Masuk
+                </Link>
+                <Link
+                  href="/auth"
+                  className="hidden sm:inline-flex items-center justify-center rounded-xl bg-pink-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-600 hover:shadow-md transition-all active:scale-95"
+                >
+                  Daftar
+                </Link>
+              </>
+            )
+          )}
         </div>
       </div>
     </header>
   )
 }
+

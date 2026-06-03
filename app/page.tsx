@@ -6,6 +6,8 @@ import USP from "@/components/landing/usp"
 import B2BPartnership from "@/components/landing/b2b"
 import Footer from "@/components/landing/footer"
 import AnimatedBackground from "@/components/landing/animated-background"
+import ArticlesSection from "@/components/landing/articles"
+import CalculatorCTA from "@/components/landing/calculator-cta"
 
 export default function LandingPage() {
   return (
@@ -18,6 +20,8 @@ export default function LandingPage() {
         <Features />
         <USP />
         <B2BPartnership />
+        <CalculatorCTA />
+        <ArticlesSection />
       </main>
       <div className="relative z-10">
         <Footer />
@@ -25,3 +29,4 @@ export default function LandingPage() {
     </div>
   )
 }
+

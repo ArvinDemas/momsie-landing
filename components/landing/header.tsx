@@ -84,7 +84,7 @@ export default function Header() {
                 : "bg-pink-100 text-pink-600 hover:bg-pink-200"
             )}
           >
-            🎮 Mini Game
+            Mini Game
           </Link>
           <Link
             href="/#contact"

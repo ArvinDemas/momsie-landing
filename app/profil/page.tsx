@@ -5,6 +5,7 @@ import { ArrowLeft, User, Mail, Calendar, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import AnimatedBackground from "@/components/landing/animated-background"
 
 export default function ProfilPage() {
   const { user, loading, signOut } = useAuth()
@@ -42,10 +43,7 @@ export default function ProfilPage() {
 
   return (
     <div className="min-h-screen bg-pink-50/30">
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-pink-300/40 blur-[120px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full bg-rose-300/30 blur-[120px]" />
-      </div>
+      <AnimatedBackground />
 
       <div className="relative z-10 p-6">
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-pink-600 transition-colors">

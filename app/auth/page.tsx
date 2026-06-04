@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, AlertCircle, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
+import AnimatedBackground from "@/components/landing/animated-background"
 
 type Tab = "login" | "register"
 
@@ -82,11 +83,7 @@ function AuthPageContent() {
 
   return (
     <div className="min-h-screen bg-pink-50/50 flex flex-col">
-      {/* Animated bg orbs */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-pink-300/40 blur-[120px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[60vw] h-[60vw] max-w-[700px] max-h-[700px] rounded-full bg-rose-300/30 blur-[120px]" />
-      </div>
+      <AnimatedBackground />
 
       {/* Back button */}
       <div className="relative z-10 p-6">

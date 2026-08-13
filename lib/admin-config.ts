@@ -1,8 +1,10 @@
-// Daftar email admin yang diizinkan mengakses dashboard
+// Daftar email admin resmi yang diizinkan mengelola dashboard & CMS Berita
 export const ADMIN_EMAILS = [
   "adnaryama1@gmail.com",
-  "mahdaputri@gmail.com",      // email Mahda — update jika beda
-  "yosawibowo@gmail.com",      // email Yosa — update jika beda
+  "yusufadi5525@gmail.com",
+  "mahdanurauliya@gmail.com",
+  "berlianapm27@gmail.com",
+  "yosawulandari16@gmail.com",
 ]
 
 export function isAdmin(email: string | null | undefined): boolean {

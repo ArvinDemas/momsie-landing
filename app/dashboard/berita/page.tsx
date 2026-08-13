@@ -1,9 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, Newspaper, Eye, EyeOff, ExternalLink } from "lucide-react"
+import { useEffect, useState, useRef } from "react"
+import { Plus, Pencil, Trash2, Newspaper, Eye, EyeOff, ExternalLink, Upload, X, ImageIcon, Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
+import { storage } from "@/lib/firebase"
+import { useAuth } from "@/lib/auth-context"
 import {
   getAllNews,
   createNews,
@@ -38,16 +41,24 @@ const EMPTY_FORM = {
   summary: "",
   content: "",
   status: "draft" as NewsStatus,
-  author: "Admin Momsie",
+  author: "",
 }
 
 export default function NewsManagerPage() {
+  const { user } = useAuth()
   const [news, setNews] = useState<NewsItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState({ ...EMPTY_FORM })
   const [saving, setSaving] = useState(false)
+
+  // Image upload state
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchNews = async () => {
     setLoading(true)
@@ -65,7 +76,12 @@ export default function NewsManagerPage() {
 
   const openAdd = () => {
     setEditingId(null)
-    setForm({ ...EMPTY_FORM })
+    setForm({
+      ...EMPTY_FORM,
+      author: user?.displayName || user?.email || "Admin Momsie",
+    })
+    setImageFile(null)
+    setImagePreview("")
     setShowForm(true)
   }
 
@@ -82,23 +98,81 @@ export default function NewsManagerPage() {
       status: item.status,
       author: item.author,
     })
+    setImageFile(null)
+    setImagePreview(item.coverUrl || "")
     setShowForm(true)
+  }
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith("image/")) {
+      alert("File harus berupa gambar (PNG, JPG, WebP)")
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Ukuran gambar maksimal 5MB")
+      return
+    }
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const uploadImageToStorage = async (file: File): Promise<string> => {
+    const timestamp = Date.now()
+    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
+    const storageRef = ref(storage, `news-covers/${timestamp}_${safeName}`)
+    
+    return new Promise((resolve, reject) => {
+      const uploadTask = uploadBytesResumable(storageRef, file)
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+          setUploadProgress(progress)
+        },
+        reject,
+        async () => {
+          const url = await getDownloadURL(uploadTask.snapshot.ref)
+          resolve(url)
+        }
+      )
+    })
   }
 
   const handleSave = async () => {
     if (!form.title.trim() || !form.summary.trim()) return
     setSaving(true)
     try {
+      let finalCoverUrl = form.coverUrl
+
+      // Upload gambar jika ada file baru dipilih
+      if (imageFile) {
+        setUploading(true)
+        setUploadProgress(0)
+        finalCoverUrl = await uploadImageToStorage(imageFile)
+        setUploading(false)
+      }
+
+      const authorName = user?.displayName || user?.email || "Admin Momsie"
+      const data = { ...form, coverUrl: finalCoverUrl, author: authorName }
+
       if (editingId) {
-        await updateNews(editingId, form)
+        await updateNews(editingId, data)
       } else {
-        await createNews(form)
+        await createNews(data)
       }
       setShowForm(false)
       setForm({ ...EMPTY_FORM })
+      setImageFile(null)
+      setImagePreview("")
       await fetchNews()
+    } catch (err) {
+      console.error(err)
+      alert("Gagal menyimpan berita. Coba lagi.")
     } finally {
       setSaving(false)
+      setUploading(false)
     }
   }
 
@@ -120,7 +194,14 @@ export default function NewsManagerPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Manajemen Berita</h1>
-          <p className="text-sm text-muted-foreground mt-1">Kelola berita, press release, dan liputan media Momsie.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Kelola berita, press release, dan liputan media Momsie.
+            {user && (
+              <span className="ml-1 text-blue-600 font-medium">
+                Login sebagai: {user.displayName || user.email}
+              </span>
+            )}
+          </p>
         </div>
         <button
           onClick={openAdd}
@@ -133,11 +214,19 @@ export default function NewsManagerPage() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-12 px-4 pb-8 overflow-y-auto">
-          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-6">
-              {editingId ? "Edit Berita" : "Tambah Berita Baru"}
-            </h2>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-8 px-4 pb-8 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-6 md:p-8 my-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">
+                {editingId ? "Edit Berita" : "Tambah Berita Baru"}
+              </h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
 
             <div className="space-y-4">
               {/* Title */}
@@ -183,7 +272,7 @@ export default function NewsManagerPage() {
                   <input
                     value={form.publisher}
                     onChange={(e) => setForm({ ...form, publisher: e.target.value })}
-                    placeholder="Merapi Uncover, Momsie Official..."
+                    placeholder="Contoh: Kompas, Momsie Official..."
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
@@ -198,24 +287,81 @@ export default function NewsManagerPage() {
                 </div>
               </div>
 
-              {/* Cover URL */}
+              {/* Cover Image Upload */}
               <div>
-                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">URL Gambar Cover</label>
-                <input
-                  value={form.coverUrl}
-                  onChange={(e) => setForm({ ...form, coverUrl: e.target.value })}
-                  placeholder="https://... (paste URL gambar)"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                />
+                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                  Foto Cover Berita
+                </label>
+                
+                {/* Preview */}
+                {imagePreview && (
+                  <div className="relative mb-3 rounded-2xl overflow-hidden border border-slate-200 h-40">
+                    <img
+                      src={imagePreview}
+                      alt="Preview cover"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setImageFile(null)
+                        setImagePreview("")
+                        setForm({ ...form, coverUrl: "" })
+                        if (fileInputRef.current) fileInputRef.current.value = ""
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full shadow text-slate-600 hover:text-red-500 transition-colors"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Upload Zone */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/jpg"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <ImageIcon className="size-8 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">
+                    <span className="text-blue-600 font-semibold">Klik untuk upload</span> atau drag & drop
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">PNG, JPG, WebP — maks. 5MB</p>
+                </div>
+
+                {/* Progress bar */}
+                {uploading && (
+                  <div className="mt-2">
+                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                      <span>Mengupload gambar...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-all duration-200 rounded-full"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Summary */}
               <div>
-                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Ringkasan Berita * <span className="text-slate-400 font-normal">(ditampilkan di kartu)</span></label>
+                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                  Ringkasan Berita *{" "}
+                  <span className="text-slate-400 font-normal">(ditampilkan di kartu berita)</span>
+                </label>
                 <textarea
                   value={form.summary}
                   onChange={(e) => setForm({ ...form, summary: e.target.value })}
-                  placeholder="Ringkasan 2-3 kalimat berita..."
+                  placeholder="Tulis ringkasan 2-3 kalimat..."
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none"
                 />
@@ -223,7 +369,10 @@ export default function NewsManagerPage() {
 
               {/* Content */}
               <div>
-                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">Isi Berita Lengkap <span className="text-slate-400 font-normal">(opsional jika ada link sumber)</span></label>
+                <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                  Isi Berita Lengkap{" "}
+                  <span className="text-slate-400 font-normal">(opsional jika ada link sumber)</span>
+                </label>
                 <textarea
                   value={form.content}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
@@ -232,20 +381,35 @@ export default function NewsManagerPage() {
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none"
                 />
               </div>
+
+              {/* Author info */}
+              <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 rounded-xl">
+                <div className="size-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold shrink-0">
+                  {(user?.displayName || user?.email || "A")[0].toUpperCase()}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Dipublikasikan oleh{" "}
+                  <span className="font-semibold text-slate-700">
+                    {user?.displayName || user?.email || "Admin"}
+                  </span>
+                </p>
+              </div>
             </div>
 
             {/* Actions */}
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleSave}
-                disabled={saving || !form.title.trim() || !form.summary.trim()}
-                className="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                disabled={saving || uploading || !form.title.trim() || !form.summary.trim()}
+                className="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
-                {saving ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Publikasikan Berita"}
+                {(saving || uploading) && <Loader2 className="size-4 animate-spin" />}
+                {uploading ? "Mengupload gambar..." : saving ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Publikasikan Berita"}
               </button>
               <button
                 onClick={() => setShowForm(false)}
-                className="px-6 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                disabled={saving || uploading}
+                className="px-6 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
                 Batal
               </button>
@@ -261,7 +425,10 @@ export default function NewsManagerPage() {
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-slate-400 animate-pulse">Memuat berita...</div>
+            <div className="p-8 text-center text-slate-400 flex items-center justify-center gap-2">
+              <Loader2 className="size-5 animate-spin" />
+              Memuat berita...
+            </div>
           ) : news.length === 0 ? (
             <div className="p-12 text-center text-slate-400">
               <Newspaper className="size-10 mx-auto mb-3 opacity-30" />
@@ -293,7 +460,14 @@ export default function NewsManagerPage() {
                       </Badge>
                     </div>
                     <p className="font-semibold text-sm text-slate-900 line-clamp-1">{item.title}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{item.publisher} · {formatDate(item.publishedAt)}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {item.publisher} · {formatDate(item.publishedAt)}
+                      {item.author && (
+                        <span className="ml-1 text-slate-400">
+                          · oleh <span className="font-medium text-slate-600">{item.author}</span>
+                        </span>
+                      )}
+                    </p>
                   </div>
 
                   {/* Actions */}

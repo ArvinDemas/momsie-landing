@@ -5,8 +5,9 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
+import { isAdmin } from "@/lib/admin-config"
 import UserMenu from "@/components/auth/user-menu"
-import { Menu, X } from "lucide-react"
+import { Menu, X, LayoutDashboard } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function Header() {
@@ -28,6 +29,7 @@ export default function Header() {
   }, [pathname])
 
   const closeMenu = () => setMobileMenuOpen(false)
+  const userIsAdmin = user ? isAdmin(user.email) : false
 
   return (
     <header className={cn(
@@ -114,7 +116,18 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {!loading && (
             user ? (
-              <UserMenu />
+              <div className="flex items-center gap-2">
+                {userIsAdmin && (
+                  <Link
+                    href="/dashboard/berita"
+                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-sm hover:bg-blue-700 transition-all active:scale-95"
+                  >
+                    <LayoutDashboard className="size-3.5" />
+                    Dashboard Admin
+                  </Link>
+                )}
+                <UserMenu />
+              </div>
             ) : (
               <>
                 <Link
@@ -156,6 +169,16 @@ export default function Header() {
           >
             <div className="px-6 py-5 flex flex-col gap-5">
               <nav className="flex flex-col gap-4 text-base font-medium text-slate-600">
+                {userIsAdmin && (
+                  <Link
+                    href="/dashboard/berita"
+                    onClick={closeMenu}
+                    className="flex items-center gap-2 text-blue-700 font-bold py-2 bg-blue-50 px-4 rounded-xl border border-blue-200"
+                  >
+                    <LayoutDashboard className="size-4 text-blue-600" />
+                    Dashboard Admin
+                  </Link>
+                )}
                 <Link
                   href="/"
                   onClick={closeMenu}
@@ -254,4 +277,3 @@ export default function Header() {
     </header>
   )
 }
-

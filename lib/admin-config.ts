@@ -9,5 +9,6 @@ export const ADMIN_EMAILS = [
 
 export function isAdmin(email: string | null | undefined): boolean {
   if (!email) return false
-  return ADMIN_EMAILS.includes(email.toLowerCase())
+  const cleanEmail = email.trim().toLowerCase()
+  return ADMIN_EMAILS.some((adminEmail) => adminEmail.trim().toLowerCase() === cleanEmail)
 }

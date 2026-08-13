@@ -1,9 +1,10 @@
 "use client"
 
-import { Bell, LogOut } from "lucide-react"
+import { Bell, LogOut, Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function DashboardHeader({ className }: { className?: string }) {
   const { user, signOut } = useAuth()
@@ -24,8 +25,15 @@ export default function DashboardHeader({ className }: { className?: string }) {
 
   return (
     <header className={cn("flex items-center justify-between border-b bg-card px-6", className)}>
-      <div className="flex items-center text-muted-foreground">
-        <span className="text-sm font-medium">Panel Admin Momsie</span>
+      <div className="flex items-center gap-4">
+        <span className="text-sm font-semibold text-slate-800">Panel Admin Momsie</span>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-pink-200 bg-pink-50/50 text-xs font-bold text-pink-600 hover:bg-pink-100 hover:border-pink-300 transition-colors"
+        >
+          <Globe className="size-3.5" />
+          Lihat Website Utama
+        </Link>
       </div>
       <div className="flex items-center gap-4">
         <button className="relative text-muted-foreground hover:text-foreground transition-colors">

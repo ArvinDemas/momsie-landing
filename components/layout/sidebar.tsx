@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { Home, Users, HeartHandshake, CircleDollarSign, Settings, Newspaper } from "lucide-react"
+import { Home, Users, HeartHandshake, CircleDollarSign, Settings, Newspaper, Globe, ArrowUpRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -22,14 +22,27 @@ export default function Sidebar({ className }: { className?: string }) {
 
   return (
     <aside className={cn("flex flex-col border-r bg-card px-4 py-6", className)}>
-      <div className="mb-8 flex items-center gap-2 px-2">
+      <Link href="/" className="mb-6 flex items-center gap-2 px-2 group cursor-pointer" title="Kembali ke Website Utama">
         <img
           src="/Logo Momsie.png"
           alt="Momsie Logo"
-          className="h-9 w-9 object-contain"
+          className="h-9 w-9 object-contain group-hover:scale-105 transition-transform"
         />
         <span className="text-2xl font-bold tracking-tight text-primary">Momsie</span>
-      </div>
+      </Link>
+
+      {/* Button Kembali ke Website Utama */}
+      <Link
+        href="/"
+        className="mb-6 flex items-center justify-between rounded-xl bg-pink-50 border border-pink-200 px-3 py-2.5 text-xs font-bold text-pink-600 hover:bg-pink-100 transition-colors shadow-sm"
+      >
+        <div className="flex items-center gap-2">
+          <Globe className="size-4 text-pink-600" />
+          <span>Kembali ke Website</span>
+        </div>
+        <ArrowUpRight className="size-4" />
+      </Link>
+
       <nav className="flex flex-col gap-1">
         {navItems.map((item, index) => {
           const Icon = item.icon

@@ -5,7 +5,8 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   updateProfile,
   User,
@@ -44,6 +45,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Handle hasil redirect jika menggunakan signInWithRedirect
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          await setDoc(
+            doc(db, "users", result.user.uid),
+            {
+              uid: result.user.uid,
+              name: result.user.displayName || "",
+              email: result.user.email || "",
+              photoURL: result.user.photoURL || "",
+              lastLogin: serverTimestamp(),
+            },
+            { merge: true }
+          )
+        }
+      })
+      .catch((err) => {
+        console.error("Redirect auth error:", err)
+      })
+
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u)
       setLoading(false)
@@ -71,18 +93,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
-    const result = await signInWithPopup(auth, googleProvider)
-    await setDoc(
-      doc(db, "users", result.user.uid),
-      {
-        uid: result.user.uid,
-        name: result.user.displayName || "",
-        email: result.user.email || "",
-        photoURL: result.user.photoURL || "",
-        lastLogin: serverTimestamp(),
-      },
-      { merge: true }
-    )
+    const { signInWithPopup } = await import("firebase/auth")
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      await setDoc(
+        doc(db, "users", result.user.uid),
+        {
+          uid: result.user.uid,
+          name: result.user.displayName || "",
+          email: result.user.email || "",
+          photoURL: result.user.photoURL || "",
+          lastLogin: serverTimestamp(),
+        },
+        { merge: true }
+      )
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code
+      if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user") {
+        await signInWithRedirect(auth, googleProvider)
+      } else {
+        throw err
+      }
+    }
   }
 
   const signOut = async () => {

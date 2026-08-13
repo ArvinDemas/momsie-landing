@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, AlertCircle, Loader2 } from "lucide-react"
@@ -22,7 +22,15 @@ function AuthPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectPath = searchParams.get("redirect") || "/"
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth()
+  const { user, loading: authLoading, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth()
+
+  // Setelah Google redirect kembali ke /auth, deteksi user sudah login
+  // lalu arahkan ke halaman tujuan secara otomatis
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push(redirectPath)
+    }
+  }, [user, authLoading, redirectPath, router])
 
   const clearForm = () => {
     setName(""); setEmail(""); setPassword(""); setConfirm(""); setError("")
@@ -30,7 +38,7 @@ function AuthPageContent() {
 
   const handleTab = (t: Tab) => { setTab(t); clearForm() }
 
-  const friendlyError = (code: string) => {
+  const friendlyError = (code: string, message?: string) => {
     const map: Record<string, string> = {
       "auth/user-not-found": "Email tidak terdaftar.",
       "auth/wrong-password": "Password salah.",
@@ -39,8 +47,9 @@ function AuthPageContent() {
       "auth/invalid-email": "Format email tidak valid.",
       "auth/too-many-requests": "Terlalu banyak percobaan. Coba lagi nanti.",
       "auth/popup-closed-by-user": "Login Google dibatalkan.",
+      "auth/unauthorized-domain": "Domain momsie.id belum di-authorize di Firebase Console (Authentication > Settings > Authorized domains).",
     }
-    return map[code] ?? "Terjadi kesalahan. Silakan coba lagi."
+    return map[code] ?? (message || code || "Terjadi kesalahan. Silakan coba lagi.")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,8 +83,8 @@ function AuthPageContent() {
       await signInWithGoogle()
       router.push(redirectPath)
     } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? ""
-      setError(friendlyError(code))
+      const e = err as { code?: string; message?: string }
+      setError(friendlyError(e.code ?? "", e.message))
     } finally {
       setGoogleLoading(false)
     }

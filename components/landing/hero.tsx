@@ -60,19 +60,23 @@ export default function Hero() {
             variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}
             className="flex flex-col sm:flex-row gap-5"
           >
-            <Link 
-              href="#trial"
+            <a 
+              href="https://play.google.com/store/apps/details?id=com.momsie.mobile&pcampaignid=web_share"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-pink-500 rounded-2xl shadow-xl shadow-pink-500/30 hover:bg-pink-600 hover:shadow-pink-500/50 hover:-translate-y-1 transition-all active:scale-95"
             >
               Dapatkan Free-Trial 1 Bulan
-            </Link>
-            <Link 
-              href="#download"
+            </a>
+            <a 
+              href="https://play.google.com/store/apps/details?id=com.momsie.mobile&pcampaignid=web_share"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-slate-700 bg-white/80 backdrop-blur-sm border-2 border-pink-100 rounded-2xl hover:bg-white hover:border-pink-300 hover:-translate-y-1 transition-all active:scale-95 shadow-sm hover:shadow-md"
             >
               <Play className="size-5 text-pink-500 fill-pink-500" />
               Unduh di Google Play
-            </Link>
+            </a>
           </motion.div>
         </motion.div>
 

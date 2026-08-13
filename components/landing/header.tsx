@@ -68,6 +68,15 @@ export default function Header() {
             Layanan
           </Link>
           <Link
+            href="/berita"
+            className={cn(
+              "transition-colors hover:text-pink-500",
+              pathname.startsWith("/berita") ? "text-pink-600 font-semibold" : "text-slate-600"
+            )}
+          >
+            Berita
+          </Link>
+          <Link
             href="/artikel"
             className={cn(
               "transition-colors hover:text-pink-500",
@@ -170,6 +179,16 @@ export default function Header() {
                   className="hover:text-pink-500 transition-colors py-1 text-slate-600"
                 >
                   Layanan
+                </Link>
+                <Link
+                  href="/berita"
+                  onClick={closeMenu}
+                  className={cn(
+                    "transition-colors hover:text-pink-500 py-1",
+                    pathname.startsWith("/berita") ? "text-pink-600 font-semibold" : "text-slate-600"
+                  )}
+                >
+                  Berita
                 </Link>
                 <Link
                   href="/artikel"

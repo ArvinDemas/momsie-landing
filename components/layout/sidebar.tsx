@@ -1,11 +1,12 @@
-import { Home, Users, HeartHandshake, CircleDollarSign, Settings } from "lucide-react"
+import { Home, Users, HeartHandshake, CircleDollarSign, Settings, Newspaper } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
 const navItems = [
-  { title: "Beranda", icon: Home, href: "/", active: true },
+  { title: "Beranda", icon: Home, href: "/dashboard", active: true },
   { title: "Data Pengguna", icon: Users, href: "#" },
   { title: "Mitra Doula", icon: HeartHandshake, href: "#" },
+  { title: "Manajemen Berita", icon: Newspaper, href: "/dashboard/berita" },
   { title: "Keuangan/Monetisasi", icon: CircleDollarSign, href: "#" },
   { title: "Pengaturan", icon: Settings, href: "#" },
 ]

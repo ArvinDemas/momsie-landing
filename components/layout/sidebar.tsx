@@ -1,21 +1,23 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { Home, Users, HeartHandshake, CircleDollarSign, Settings, Newspaper, Globe, ArrowUpRight } from "lucide-react"
+import { Home, Users, HeartHandshake, CircleDollarSign, Settings, Newspaper, Globe, ArrowUpRight, Wallet, ReceiptText, CalendarDays, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
 const navItems = [
   { title: "Beranda", icon: Home, href: "/dashboard" },
-  { title: "Data Pengguna", icon: Users, href: "/dashboard/pengguna" },
+  { title: "Transaksi", icon: ReceiptText, href: "/dashboard/transaksi" },
+  { title: "Booking", icon: CalendarDays, href: "/dashboard/booking" },
+  { title: "Mitra", icon: Users, href: "/dashboard/mitra" },
   { title: "Mitra Doula", icon: HeartHandshake, href: "/dashboard/doula" },
+  { title: "Penarikan Dana", icon: Wallet, href: "/dashboard/withdrawal" },
+  { title: "Keuangan", icon: TrendingUp, href: "/dashboard/keuangan" },
   { title: "Manajemen Berita", icon: Newspaper, href: "/dashboard/berita" },
-  { title: "Keuangan/Monetisasi", icon: CircleDollarSign, href: "/dashboard/keuangan" },
-  { title: "Pengaturan", icon: Settings, href: "/dashboard/pengaturan" },
 ]
 
 // Menu yang belum ada halaman nyata
-const COMING_SOON = ["/dashboard/pengguna", "/dashboard/doula", "/dashboard/keuangan", "/dashboard/pengaturan"]
+const COMING_SOON = ["/dashboard/pengaturan"]
 
 export default function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname()

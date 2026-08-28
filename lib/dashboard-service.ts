@@ -106,7 +106,7 @@ const parseTime = (val: any): number => {
 
 /** Generates realistic, synchronized Momsie transactions: 38 (June) + 81 (July) + 74 (August) = EXACTLY 193 TRX */
 export function generateMomsieTransactions(): Transaction[] {
-  // Pool of 42 active transacting female users (out of 253 total registered app users)
+  // Pool of 78 female names for transacting users
   const femaleNames = [
     "Siti Rahmawati", "Anisa Putri", "Dewi Lestari", "Bunga Citra", "Nurul Aini",
     "Rina Astuti", "Fitriani Agustina", "Dian Sastrowardoyo", "Maya Indah Permata", "Ratna Juwita",
@@ -116,7 +116,14 @@ export function generateMomsieTransactions(): Transaction[] {
     "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari",
     "Shinta Prameswari", "Kartika Sari", "Endang Sri Wahyuni", "Larasati Anggraeni", "Mega Kusuma Dewi",
     "Novita Sari", "Pratiwi Rahmawati", "Retno Palupi", "Sari Asih", "Tiara Maharani",
-    "Widya Wulandari", "Yuni Shara"
+    "Widya Wulandari", "Yuni Shara", "Zulaikha Rahma", "Ayu Tingting", "Cinta Laura",
+    "Desy Ratnasari", "Erlina Febriani", "Febby Rastanty", "Gita Gutawa", "Hesti Purwadinata",
+    "Indah Permatasari", "Juwita Bahar", "Kiki Amalia", "Luna Maya", "Maudy Ayunda",
+    "Nia Ramadhani", "Olla Ramlan", "Paula Verhoeven", "Raisa Andriana", "Syahrini",
+    "Titi Kamal", "Ussy Sulistiawaty", "Vina Panduwinata", "Wulan Guritno", "Yadira Sastry",
+    "Zahra Amelia", "Audrey Hepburn", "Bintang Maharani", "Chika Jessica", "Dara The Virgin",
+    "Elma Theana", "Fatin Shidqia", "Gisella Anastasia", "Hannah Al Rashid", "Isyana Sarasvati",
+    "Jessica Mila", "Kezia Karamoy", "Laura Basuki"
   ]
 
   const paymentMethods = ["qris", "gopay", "shopeepay", "transfer_bca", "transfer_mandiri"]
@@ -142,9 +149,16 @@ export function generateMomsieTransactions(): Transaction[] {
     const dateObj = new Date(year, month - 1, day, hour, (txCounter % 40) + 10)
 
     const txId = `TX-MSI-${txCounter++}`
-    // Cycle among the 42 transacting users
-    const userIdx = (list.length % 42)
-    const userName = femaleNames[userIdx]
+    // First 39 transactions go to 39 unique single-order users (0..38)
+    // Next 154 transactions cycle among 39 repeat-order users (39..77)
+    let userIdx = 0
+    if (list.length < 39) {
+      userIdx = list.length
+    } else {
+      userIdx = 39 + ((list.length - 39) % 39)
+    }
+
+    const userName = femaleNames[userIdx % femaleNames.length]
 
     list.push({
       id: txId,
@@ -716,8 +730,8 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
     const regTime = startDate.getTime() + Math.floor((i / 253) * (endDate.getTime() - startDate.getTime()))
     const regDate = new Date(regTime).toISOString()
 
-    // Only the first 42 users (USR-100 to USR-141) have transacted
-    const stats = i < 42 ? (userStatsMap[userId] || { count: 0, spend: 0 }) : { count: 0, spend: 0 }
+    // Only the first 78 users (USR-100 to USR-177) have transacted
+    const stats = i < 78 ? (userStatsMap[userId] || { count: 0, spend: 0 }) : { count: 0, spend: 0 }
 
     users.push({
       id: userId,

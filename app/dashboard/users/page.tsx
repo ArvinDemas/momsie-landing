@@ -7,32 +7,34 @@ import { Loader2, Search, Activity, ChevronDown, Filter, ArrowUpRight, Eye, EyeO
 import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone, maskInitialsName } from "@/lib/dashboard-service"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-// Realistic daily time series datasets generated specifically for each metric tab
+// Realistic daily time series datasets generated specifically for each metric tab s/d 29 Aug
 const chartDataJangkauan = [
   { date: "31 Jul", penjelajahan: 12, berbayar: 45, tidakDiatribusikan: 8 },
   { date: "3 Aug", penjelajahan: 18, berbayar: 62, tidakDiatribusikan: 12 },
-  { date: "6 Aug", penjelajahan: 24, berbayar: 85, tidakDiatribusikan: 15 },
-  { date: "9 Aug", penjelajahan: 15, berbayar: 40, tidakDiatribusikan: 9 },
-  { date: "12 Aug", penjelajahan: 32, berbayar: 110, tidakDiatribusikan: 18 },
-  { date: "15 Aug", penjelajahan: 28, berbayar: 95, tidakDiatribusikan: 14 },
-  { date: "18 Aug", penjelajahan: 35, berbayar: 125, tidakDiatribusikan: 20 },
-  { date: "21 Aug", penjelajahan: 42, berbayar: 150, tidakDiatribusikan: 22 },
-  { date: "24 Aug", penjelajahan: 65, berbayar: 210, tidakDiatribusikan: 28 },
-  { date: "27 Aug", penjelajahan: 85, berbayar: 280, tidakDiatribusikan: 35 },
+  { date: "6 Aug", penjelajahan: 24, berbayar: 78, tidakDiatribusikan: 15 },
+  { date: "9 Aug", penjelajahan: 20, berbayar: 55, tidakDiatribusikan: 10 },
+  { date: "12 Aug", penjelajahan: 32, berbayar: 95, tidakDiatribusikan: 18 },
+  { date: "15 Aug", penjelajahan: 28, berbayar: 88, tidakDiatribusikan: 14 },
+  { date: "18 Aug", penjelajahan: 35, berbayar: 110, tidakDiatribusikan: 20 },
+  { date: "21 Aug", penjelajahan: 40, berbayar: 125, tidakDiatribusikan: 22 },
+  { date: "24 Aug", penjelajahan: 45, berbayar: 135, tidakDiatribusikan: 25 },
+  { date: "27 Aug", penjelajahan: 48, berbayar: 142, tidakDiatribusikan: 27 },
+  { date: "29 Aug", penjelajahan: 50, berbayar: 148, tidakDiatribusikan: 28 },
 ]
 
-// Realistic acquisition curve (smooth growth, values 1-12 adding up to 253 total users)
+// Realistic acquisition curve s/d 29 Aug
 const chartDataAkuisisi = [
   { date: "31 Jul", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
   { date: "3 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
   { date: "6 Aug", penjelajahan: 2, berbayar: 7, tidakDiatribusikan: 1 },
-  { date: "9 Aug", penjelajahan: 1, berbayar: 3, tidakDiatribusikan: 1 },
+  { date: "9 Aug", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
   { date: "12 Aug", penjelajahan: 3, berbayar: 8, tidakDiatribusikan: 2 },
   { date: "15 Aug", penjelajahan: 3, berbayar: 7, tidakDiatribusikan: 1 },
   { date: "18 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
   { date: "21 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
   { date: "24 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
   { date: "27 Aug", penjelajahan: 7, berbayar: 12, tidakDiatribusikan: 3 },
+  { date: "29 Aug", penjelajahan: 7, berbayar: 12, tidakDiatribusikan: 3 },
 ]
 
 const chartDataAktifkan = [
@@ -46,6 +48,7 @@ const chartDataAktifkan = [
   { date: "21 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
   { date: "24 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
   { date: "27 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
+  { date: "29 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
 ]
 
 const chartDataInteraksi = [
@@ -59,6 +62,7 @@ const chartDataInteraksi = [
   { date: "21 Aug", penjelajahan: 3, berbayar: 8, tidakDiatribusikan: 2 },
   { date: "24 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
   { date: "27 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
+  { date: "29 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
 ]
 
 const chartDataPertahankan = [
@@ -72,6 +76,7 @@ const chartDataPertahankan = [
   { date: "21 Aug", penjelajahan: 77, berbayar: 83, tidakDiatribusikan: 67 },
   { date: "24 Aug", penjelajahan: 79, berbayar: 85, tidakDiatribusikan: 69 },
   { date: "27 Aug", penjelajahan: 80, berbayar: 86, tidakDiatribusikan: 70 },
+  { date: "29 Aug", penjelajahan: 80, berbayar: 86, tidakDiatribusikan: 70 },
 ]
 
 export default function UsersPage() {

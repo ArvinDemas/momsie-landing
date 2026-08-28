@@ -260,8 +260,8 @@ export function generateMomsieTransactions(): Transaction[] {
   // ============================================================
   // BULAN AGUSTUS 2026 (EXACTLY 74 TRX Total - Steady Matured Stage)
   // ============================================================
-  // 1-27 Agustus 2026 (74 TRX total)
-  for (let d = 1; d <= 27; d++) {
+  // 1-28 Agustus 2026 (74 TRX total spread up to 28 August)
+  for (let d = 1; d <= 28; d++) {
     if (list.length >= 193) break
     const dayOfWeek = new Date(2026, 7, d).getDay()
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
@@ -849,7 +849,7 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
 
   const users: RegisteredUser[] = []
   const startDate = new Date(2026, 5, 1) // App launched in June 2026 (Month 5 zero-indexed)
-  const endDate = new Date(2026, 7, 27)
+  const endDate = new Date(2026, 7, 29)
 
   for (let i = 0; i < 253; i++) {
     const userId = `USR-${100 + i}`

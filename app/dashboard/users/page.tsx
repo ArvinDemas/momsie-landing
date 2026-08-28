@@ -7,8 +7,10 @@ import { Loader2, Search, Activity, ChevronDown, Filter, ArrowUpRight, Eye, EyeO
 import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone, maskInitialsName } from "@/lib/dashboard-service"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-// Realistic daily time series datasets generated specifically for each metric tab s/d 29 Aug
-const chartDataJangkauan = [
+// ============================================================
+// 1. 28 HARI TERAKHIR DATASETS (31 Jul - 29 Aug, incomplete Aug 29 dips down naturally)
+// ============================================================
+const chartDataJangkauan_28d = [
   { date: "31 Jul", penjelajahan: 12, berbayar: 45, tidakDiatribusikan: 8 },
   { date: "3 Aug", penjelajahan: 18, berbayar: 62, tidakDiatribusikan: 12 },
   { date: "6 Aug", penjelajahan: 24, berbayar: 78, tidakDiatribusikan: 15 },
@@ -19,11 +21,10 @@ const chartDataJangkauan = [
   { date: "21 Aug", penjelajahan: 40, berbayar: 125, tidakDiatribusikan: 22 },
   { date: "24 Aug", penjelajahan: 45, berbayar: 135, tidakDiatribusikan: 25 },
   { date: "27 Aug", penjelajahan: 48, berbayar: 142, tidakDiatribusikan: 27 },
-  { date: "29 Aug", penjelajahan: 50, berbayar: 148, tidakDiatribusikan: 28 },
+  { date: "29 Aug", penjelajahan: 15, berbayar: 38, tidakDiatribusikan: 9 }, // Incomplete day dip!
 ]
 
-// Realistic acquisition curve s/d 29 Aug
-const chartDataAkuisisi = [
+const chartDataAkuisisi_28d = [
   { date: "31 Jul", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
   { date: "3 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
   { date: "6 Aug", penjelajahan: 2, berbayar: 7, tidakDiatribusikan: 1 },
@@ -34,10 +35,10 @@ const chartDataAkuisisi = [
   { date: "21 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
   { date: "24 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
   { date: "27 Aug", penjelajahan: 7, berbayar: 12, tidakDiatribusikan: 3 },
-  { date: "29 Aug", penjelajahan: 7, berbayar: 12, tidakDiatribusikan: 3 },
+  { date: "29 Aug", penjelajahan: 2, berbayar: 3, tidakDiatribusikan: 1 }, // Incomplete day dip!
 ]
 
-const chartDataAktifkan = [
+const chartDataAktifkan_28d = [
   { date: "31 Jul", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
   { date: "3 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
   { date: "6 Aug", penjelajahan: 2, berbayar: 6, tidakDiatribusikan: 1 },
@@ -48,10 +49,10 @@ const chartDataAktifkan = [
   { date: "21 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
   { date: "24 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
   { date: "27 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
-  { date: "29 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
+  { date: "29 Aug", penjelajahan: 2, berbayar: 3, tidakDiatribusikan: 1 }, // Incomplete day dip!
 ]
 
-const chartDataInteraksi = [
+const chartDataInteraksi_28d = [
   { date: "31 Jul", penjelajahan: 1, berbayar: 3, tidakDiatribusikan: 1 },
   { date: "3 Aug", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
   { date: "6 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
@@ -62,10 +63,10 @@ const chartDataInteraksi = [
   { date: "21 Aug", penjelajahan: 3, berbayar: 8, tidakDiatribusikan: 2 },
   { date: "24 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
   { date: "27 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
-  { date: "29 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
+  { date: "29 Aug", penjelajahan: 1, berbayar: 2, tidakDiatribusikan: 1 }, // Incomplete day dip!
 ]
 
-const chartDataPertahankan = [
+const chartDataPertahankan_28d = [
   { date: "31 Jul", penjelajahan: 70, berbayar: 78, tidakDiatribusikan: 62 },
   { date: "3 Aug", penjelajahan: 72, berbayar: 80, tidakDiatribusikan: 64 },
   { date: "6 Aug", penjelajahan: 75, berbayar: 82, tidakDiatribusikan: 65 },
@@ -76,7 +77,128 @@ const chartDataPertahankan = [
   { date: "21 Aug", penjelajahan: 77, berbayar: 83, tidakDiatribusikan: 67 },
   { date: "24 Aug", penjelajahan: 79, berbayar: 85, tidakDiatribusikan: 69 },
   { date: "27 Aug", penjelajahan: 80, berbayar: 86, tidakDiatribusikan: 70 },
-  { date: "29 Aug", penjelajahan: 80, berbayar: 86, tidakDiatribusikan: 70 },
+  { date: "29 Aug", penjelajahan: 78, berbayar: 82, tidakDiatribusikan: 68 },
+]
+
+// ============================================================
+// 2. 90 HARI TERAKHIR DATASETS (1 Jun - 29 Aug, Full 3 Months of History)
+// ============================================================
+const chartDataJangkauan_90d = [
+  { date: "1 Jun", penjelajahan: 2, berbayar: 8, tidakDiatribusikan: 2 },
+  { date: "10 Jun", penjelajahan: 5, berbayar: 20, tidakDiatribusikan: 4 },
+  { date: "20 Jun", penjelajahan: 10, berbayar: 38, tidakDiatribusikan: 7 },
+  { date: "1 Jul", penjelajahan: 15, berbayar: 52, tidakDiatribusikan: 10 },
+  { date: "10 Jul", penjelajahan: 22, berbayar: 70, tidakDiatribusikan: 14 },
+  { date: "20 Jul", penjelajahan: 28, berbayar: 85, tidakDiatribusikan: 16 },
+  { date: "1 Aug", penjelajahan: 32, berbayar: 95, tidakDiatribusikan: 18 },
+  { date: "10 Aug", penjelajahan: 38, berbayar: 115, tidakDiatribusikan: 22 },
+  { date: "20 Aug", penjelajahan: 44, berbayar: 132, tidakDiatribusikan: 25 },
+  { date: "27 Aug", penjelajahan: 48, berbayar: 142, tidakDiatribusikan: 27 },
+  { date: "29 Aug", penjelajahan: 15, berbayar: 38, tidakDiatribusikan: 9 }, // Incomplete day dip!
+]
+
+const chartDataAkuisisi_90d = [
+  { date: "1 Jun", penjelajahan: 1, berbayar: 1, tidakDiatribusikan: 0 },
+  { date: "10 Jun", penjelajahan: 1, berbayar: 2, tidakDiatribusikan: 1 },
+  { date: "20 Jun", penjelajahan: 2, berbayar: 4, tidakDiatribusikan: 1 },
+  { date: "1 Jul", penjelajahan: 3, berbayar: 6, tidakDiatribusikan: 1 },
+  { date: "10 Jul", penjelajahan: 4, berbayar: 7, tidakDiatribusikan: 2 },
+  { date: "20 Jul", penjelajahan: 5, berbayar: 8, tidakDiatribusikan: 2 },
+  { date: "1 Aug", penjelajahan: 5, berbayar: 9, tidakDiatribusikan: 2 },
+  { date: "10 Aug", penjelajahan: 6, berbayar: 10, tidakDiatribusikan: 3 },
+  { date: "20 Aug", penjelajahan: 7, berbayar: 11, tidakDiatribusikan: 3 },
+  { date: "27 Aug", penjelajahan: 7, berbayar: 12, tidakDiatribusikan: 3 },
+  { date: "29 Aug", penjelajahan: 2, berbayar: 3, tidakDiatribusikan: 1 }, // Incomplete day dip!
+]
+
+const chartDataAktifkan_90d = [
+  { date: "1 Jun", penjelajahan: 1, berbayar: 1, tidakDiatribusikan: 0 },
+  { date: "10 Jun", penjelajahan: 1, berbayar: 2, tidakDiatribusikan: 1 },
+  { date: "20 Jun", penjelajahan: 2, berbayar: 3, tidakDiatribusikan: 1 },
+  { date: "1 Jul", penjelajahan: 3, berbayar: 5, tidakDiatribusikan: 1 },
+  { date: "10 Jul", penjelajahan: 4, berbayar: 6, tidakDiatribusikan: 2 },
+  { date: "20 Jul", penjelajahan: 5, berbayar: 7, tidakDiatribusikan: 2 },
+  { date: "1 Aug", penjelajahan: 5, berbayar: 8, tidakDiatribusikan: 2 },
+  { date: "10 Aug", penjelajahan: 6, berbayar: 9, tidakDiatribusikan: 2 },
+  { date: "20 Aug", penjelajahan: 6, berbayar: 10, tidakDiatribusikan: 3 },
+  { date: "27 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
+  { date: "29 Aug", penjelajahan: 2, berbayar: 3, tidakDiatribusikan: 1 }, // Incomplete day dip!
+]
+
+const chartDataInteraksi_90d = [
+  { date: "1 Jun", penjelajahan: 0, berbayar: 1, tidakDiatribusikan: 0 },
+  { date: "10 Jun", penjelajahan: 1, berbayar: 2, tidakDiatribusikan: 0 },
+  { date: "20 Jun", penjelajahan: 1, berbayar: 3, tidakDiatribusikan: 1 },
+  { date: "1 Jul", penjelajahan: 2, berbayar: 4, tidakDiatribusikan: 1 },
+  { date: "10 Jul", penjelajahan: 3, berbayar: 5, tidakDiatribusikan: 1 },
+  { date: "20 Jul", penjelajahan: 4, berbayar: 6, tidakDiatribusikan: 2 },
+  { date: "1 Aug", penjelajahan: 4, berbayar: 7, tidakDiatribusikan: 2 },
+  { date: "10 Aug", penjelajahan: 5, berbayar: 8, tidakDiatribusikan: 2 },
+  { date: "20 Aug", penjelajahan: 5, berbayar: 9, tidakDiatribusikan: 2 },
+  { date: "27 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
+  { date: "29 Aug", penjelajahan: 1, berbayar: 2, tidakDiatribusikan: 1 }, // Incomplete day dip!
+]
+
+const chartDataPertahankan_90d = [
+  { date: "1 Jun", penjelajahan: 65, berbayar: 70, tidakDiatribusikan: 55 },
+  { date: "10 Jun", penjelajahan: 68, berbayar: 72, tidakDiatribusikan: 58 },
+  { date: "20 Jun", penjelajahan: 70, berbayar: 75, tidakDiatribusikan: 60 },
+  { date: "1 Jul", penjelajahan: 72, berbayar: 78, tidakDiatribusikan: 62 },
+  { date: "10 Jul", penjelajahan: 75, berbayar: 80, tidakDiatribusikan: 64 },
+  { date: "20 Jul", penjelajahan: 76, berbayar: 82, tidakDiatribusikan: 65 },
+  { date: "1 Aug", penjelajahan: 78, berbayar: 84, tidakDiatribusikan: 67 },
+  { date: "10 Aug", penjelajahan: 79, berbayar: 85, tidakDiatribusikan: 68 },
+  { date: "20 Aug", penjelajahan: 80, berbayar: 86, tidakDiatribusikan: 69 },
+  { date: "27 Aug", penjelajahan: 80, berbayar: 86, tidakDiatribusikan: 70 },
+  { date: "29 Aug", penjelajahan: 78, berbayar: 82, tidakDiatribusikan: 68 },
+]
+
+// ============================================================
+// 3. 6 BULAN TERAKHIR DATASETS (Maret - Agustus 2026)
+// ============================================================
+const chartDataJangkauan_6m = [
+  { date: "Mar", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Apr", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Mei", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Jun", penjelajahan: 120, berbayar: 450, tidakDiatribusikan: 80 },
+  { date: "Jul", penjelajahan: 350, berbayar: 980, tidakDiatribusikan: 210 },
+  { date: "Agu", penjelajahan: 520, berbayar: 1410, tidakDiatribusikan: 290 },
+]
+
+const chartDataAkuisisi_6m = [
+  { date: "Mar", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Apr", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Mei", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Jun", penjelajahan: 8, berbayar: 28, tidakDiatribusikan: 6 },
+  { date: "Jul", penjelajahan: 24, berbayar: 81, tidakDiatribusikan: 16 },
+  { date: "Agu", penjelajahan: 32, berbayar: 110, tidakDiatribusikan: 24 },
+]
+
+const chartDataAktifkan_6m = [
+  { date: "Mar", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Apr", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Mei", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Jun", penjelajahan: 7, berbayar: 26, tidakDiatribusikan: 5 },
+  { date: "Jul", penjelajahan: 22, berbayar: 78, tidakDiatribusikan: 15 },
+  { date: "Agu", penjelajahan: 30, berbayar: 104, tidakDiatribusikan: 22 },
+]
+
+const chartDataInteraksi_6m = [
+  { date: "Mar", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Apr", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Mei", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Jun", penjelajahan: 5, berbayar: 20, tidakDiatribusikan: 4 },
+  { date: "Jul", penjelajahan: 18, berbayar: 65, tidakDiatribusikan: 12 },
+  { date: "Agu", penjelajahan: 25, berbayar: 89, tidakDiatribusikan: 18 },
+]
+
+const chartDataPertahankan_6m = [
+  { date: "Mar", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Apr", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Mei", penjelajahan: 0, berbayar: 0, tidakDiatribusikan: 0 },
+  { date: "Jun", penjelajahan: 70, berbayar: 75, tidakDiatribusikan: 60 },
+  { date: "Jul", penjelajahan: 76, berbayar: 82, tidakDiatribusikan: 66 },
+  { date: "Agu", penjelajahan: 80, berbayar: 86, tidakDiatribusikan: 70 },
 ]
 
 export default function UsersPage() {
@@ -84,7 +206,6 @@ export default function UsersPage() {
   const [filtered, setFiltered] = useState<RegisteredUser[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [periodFilter, setPeriodFilter] = useState("all")
 
   // Selected user for Pregnancy Detail Modal
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null)
@@ -104,6 +225,7 @@ export default function UsersPage() {
   const [metricBy, setMetricBy] = useState("Perangkat")
   const [metricByOpen, setMetricByOpen] = useState(false)
 
+  // Play Console Timeframe selector state (Exact options per Play Console UI)
   const [playTimeframe, setPlayTimeframe] = useState("28 hari terakhir")
   const [playTimeframeOpen, setPlayTimeframeOpen] = useState(false)
 
@@ -168,6 +290,30 @@ export default function UsersPage() {
     </div>
   )
 
+  // Helper to resolve dynamic dataset based on activeTab AND selected playTimeframe
+  const getChartData = () => {
+    if (playTimeframe === "90 hari terakhir") {
+      if (activeTab === "akuisisi") return chartDataAkuisisi_90d
+      if (activeTab === "aktifkan") return chartDataAktifkan_90d
+      if (activeTab === "interaksi") return chartDataInteraksi_90d
+      if (activeTab === "pertahankan") return chartDataPertahankan_90d
+      return chartDataJangkauan_90d
+    }
+    if (playTimeframe === "6 bulan terakhir") {
+      if (activeTab === "akuisisi") return chartDataAkuisisi_6m
+      if (activeTab === "aktifkan") return chartDataAktifkan_6m
+      if (activeTab === "interaksi") return chartDataInteraksi_6m
+      if (activeTab === "pertahankan") return chartDataPertahankan_6m
+      return chartDataJangkauan_6m
+    }
+    // Default: 28 hari terakhir
+    if (activeTab === "akuisisi") return chartDataAkuisisi_28d
+    if (activeTab === "aktifkan") return chartDataAktifkan_28d
+    if (activeTab === "interaksi") return chartDataInteraksi_28d
+    if (activeTab === "pertahankan") return chartDataPertahankan_28d
+    return chartDataJangkauan_28d
+  }
+
   // Realistic metric tab values & positive growth percentages
   const tabConfigs = {
     jangkauan: {
@@ -176,7 +322,6 @@ export default function UsersPage() {
       value: "1.840",
       change: "+14%",
       chartTitle: "Tayangan perangkat",
-      chartData: chartDataJangkauan,
     },
     akuisisi: {
       title: "Akuisisi",
@@ -184,7 +329,6 @@ export default function UsersPage() {
       value: "253",
       change: "+22%",
       chartTitle: "Akuisisi perangkat",
-      chartData: chartDataAkuisisi,
     },
     aktifkan: {
       title: "Aktifkan",
@@ -192,7 +336,6 @@ export default function UsersPage() {
       value: "241",
       change: "+18%",
       chartTitle: "Perangkat tempat pertama dibuka",
-      chartData: chartDataAktifkan,
     },
     interaksi: {
       title: "Interaksi",
@@ -200,7 +343,6 @@ export default function UsersPage() {
       value: "198",
       change: "+25%",
       chartTitle: "Perangkat aktif harian",
-      chartData: chartDataInteraksi,
     },
     pertahankan: {
       title: "Pertahankan",
@@ -208,7 +350,6 @@ export default function UsersPage() {
       value: "78.2%",
       change: "Tinggi",
       chartTitle: "Retensi perangkat 7 hari",
-      chartData: chartDataPertahankan,
     },
   }
 
@@ -258,6 +399,7 @@ export default function UsersPage() {
 
   const currentTab = tabConfigs[activeTab]
   const currentDimension = dimensionDataMap[selectedDimension] || dimensionDataMap["sumber_traffic"]
+  const currentChartData = getChartData()
 
   return (
     <div className="space-y-4">
@@ -302,21 +444,21 @@ export default function UsersPage() {
                 )}
               </div>
 
-              {/* Dropdown 2: Timeframe */}
+              {/* Dropdown 2: Timeframe (Exact options from Google Play Console UI screenshot) */}
               <div className="relative">
                 <button
                   onClick={() => { setPlayTimeframeOpen(!playTimeframeOpen); setMetricByOpen(false); }}
-                  className="text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1 shadow-2xs transition-colors"
+                  className="text-xs text-gray-800 bg-sky-100 hover:bg-sky-200 px-3.5 py-1.5 rounded-xl border border-sky-200 font-bold flex items-center gap-2 shadow-2xs transition-colors"
                 >
-                  {playTimeframe} <ChevronDown className="size-3 text-gray-600" />
+                  <span>📅 {playTimeframe}</span> <ChevronDown className="size-3.5 text-sky-700" />
                 </button>
                 {playTimeframeOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-1 text-xs">
-                    {["28 hari terakhir", "90 hari terakhir", "Per Bulan", "Per Minggu", "Per Hari"].map(opt => (
+                  <div className="absolute top-full right-0 mt-1 w-52 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 p-1 text-xs divide-y divide-gray-50">
+                    {["28 hari terakhir", "90 hari terakhir", "6 bulan terakhir"].map(opt => (
                       <button
                         key={opt}
                         onClick={() => { setPlayTimeframe(opt); setPlayTimeframeOpen(false); }}
-                        className={`w-full text-left p-2 rounded-lg transition-colors ${playTimeframe === opt ? "bg-pink-50 text-pink-900 font-bold" : "hover:bg-gray-50 text-gray-700"}`}
+                        className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-colors ${playTimeframe === opt ? "bg-sky-50 text-sky-900 font-extrabold" : "hover:bg-gray-50 text-gray-700"}`}
                       >
                         {opt}
                       </button>
@@ -395,18 +537,15 @@ export default function UsersPage() {
                   {dimensionOpen && (
                     <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-1 divide-y divide-gray-100 text-xs">
                       {[
-                        { key: "sumber_traffic", label: "Sumber traffic", desc: "Cara pengguna menemukan listingan Play Store" },
-                        { key: "negara", label: "Negara/wilayah", desc: "Lokasi wilayah tempat pengguna/perangkat berada" },
-                        { key: "versi_app", label: "Versi aplikasi", desc: "Versi aplikasi Momsie di perangkat" },
-                        { key: "bahasa", label: "Bahasa", desc: "Setelan bahasa utama di perangkat" },
-                        { key: "versi_android", label: "Versi Android", desc: "Versi OS Android pada perangkat" },
+                        { key: "sumber_traffic", label: "Sumber traffic", desc: "Breakdown berdasarkan channel akuisisi" },
+                        { key: "negara", label: "Negara/wilayah", desc: "Breakdown berdasarkan lokasi geografis" },
+                        { key: "versi_app", label: "Versi aplikasi", desc: "Breakdown berdasarkan versi build APK" },
+                        { key: "bahasa", label: "Bahasa", desc: "Breakdown berdasarkan bahasa perangkat" },
+                        { key: "versi_android", label: "Versi Android", desc: "Breakdown berdasarkan OS Android" },
                       ].map(opt => (
                         <button
                           key={opt.key}
-                          onClick={() => {
-                            setSelectedDimension(opt.key)
-                            setDimensionOpen(false)
-                          }}
+                          onClick={() => { setSelectedDimension(opt.key); setDimensionOpen(false); }}
                           className={`w-full text-left p-2 rounded-lg transition-colors ${selectedDimension === opt.key ? "bg-sky-50 text-sky-900 font-bold" : "hover:bg-gray-50 text-gray-700"}`}
                         >
                           <p className="font-semibold">{opt.label}</p>
@@ -432,10 +571,10 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {/* Recharts Area Chart Dynamically Reacting to Active Tab & Dimension */}
+            {/* Recharts Area Chart Dynamically Reacting to Active Tab, Timeframe & Dimension */}
             <div className="h-[280px] w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={currentTab.chartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                <AreaChart data={currentChartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                   <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} />
                   <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
@@ -560,100 +699,82 @@ export default function UsersPage() {
               <thead>
                 <tr className="border-b text-muted-foreground bg-muted/30">
                   <th className="text-left py-3 px-3 font-medium">ID User</th>
-                  <th className="text-left py-3 px-3 font-medium">Nama Pengguna</th>
-                  <th className="text-left py-3 px-3 font-medium">Usia & Kehamilan</th>
-                  <th className="text-left py-3 px-3 font-medium">Email</th>
-                  <th className="text-left py-3 px-3 font-medium">No. Telepon</th>
+                  <th className="text-left py-3 px-3 font-medium">Nama Registrasi</th>
+                  <th className="text-left py-3 px-3 font-medium">Email User</th>
+                  <th className="text-left py-3 px-3 font-medium">No. HP</th>
                   <th className="text-left py-3 px-3 font-medium">Domisili</th>
-                  <th className="text-left py-3 px-3 font-medium">Tgl Registrasi</th>
+                  <th className="text-left py-3 px-3 font-medium">Tanggal Registrasi</th>
                   <th className="text-right py-3 px-3 font-medium">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(u => {
-                  const isNameUnmasked = unmaskedMap[`${u.id}_name`]
-                  const isEmailUnmasked = unmaskedMap[`${u.id}_email`]
-                  const isPhoneUnmasked = unmaskedMap[`${u.id}_phone`]
+                {filtered.map(u => (
+                  <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                    <td className="py-3 px-3 font-mono text-xs font-semibold text-gray-800">{u.id}</td>
 
-                  const displayName = isNameUnmasked ? u.name : maskInitialsName(u.name)
-                  const displayEmail = isEmailUnmasked ? u.email : maskEmail(u.email)
-                  const displayPhone = isPhoneUnmasked ? u.phone : maskPhone(u.phone)
-
-                  const p = u.pregnancyProfile
-
-                  return (
-                    <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-3 font-mono text-xs font-bold text-gray-700">{u.id}</td>
-
-                      {/* Nama Pengguna with Eye Button */}
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-gray-900">{displayName}</span>
-                          <button
-                            onClick={() => toggleUnmask(u.id, "name")}
-                            className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
-                            title={isNameUnmasked ? "Sembunyikan Nama" : "Tampilkan Nama Lengkap"}
-                          >
-                            {isNameUnmasked ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-                          </button>
-                        </div>
-                      </td>
-
-                      {/* Usia & Kehamilan */}
-                      <td className="py-3 px-3">
-                        <span className="text-xs font-semibold text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">
-                          {p?.usiaRange || "26-30 tahun"}
+                    {/* Nama with Eye Toggle */}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-gray-900">
+                          {unmaskedMap[`${u.id}_name`] ? u.name : maskInitialsName(u.name)}
                         </span>
-                        <p className="text-[11px] text-gray-600 font-medium mt-0.5">
-                          {p?.faseKehamilan || "Trimester 1"}
-                        </p>
-                      </td>
-
-                      {/* Email with Eye Button */}
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs text-gray-700">{displayEmail}</span>
-                          <button
-                            onClick={() => toggleUnmask(u.id, "email")}
-                            className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
-                            title={isEmailUnmasked ? "Sembunyikan Email" : "Tampilkan Email Lengkap"}
-                          >
-                            {isEmailUnmasked ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-                          </button>
-                        </div>
-                      </td>
-
-                      {/* No HP with Eye Button */}
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs text-gray-700">{displayPhone}</span>
-                          <button
-                            onClick={() => toggleUnmask(u.id, "phone")}
-                            className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
-                            title={isPhoneUnmasked ? "Sembunyikan No HP" : "Tampilkan No HP Lengkap"}
-                          >
-                            {isPhoneUnmasked ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-                          </button>
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-3 text-xs text-gray-700">{u.domisili}</td>
-                      <td className="py-3 px-3 text-xs text-gray-600">{formatDate(u.registeredAt)}</td>
-
-                      <td className="py-3 px-3 text-right">
                         <button
-                          onClick={() => setSelectedUser(u)}
-                          className="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs rounded-lg transition-colors inline-flex items-center gap-1 shadow-xs"
+                          onClick={() => toggleUnmask(u.id, "name")}
+                          className="p-0.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded transition-colors"
+                          title={unmaskedMap[`${u.id}_name`] ? "Sembunyikan Nama" : "Tampilkan Nama Lengkap"}
                         >
-                          <Eye className="size-3.5" /> Detail Kehamilan
+                          {unmaskedMap[`${u.id}_name`] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                         </button>
-                      </td>
-                    </tr>
-                  )
-                })}
+                      </div>
+                    </td>
+
+                    {/* Email with Eye Toggle */}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-xs text-gray-600">
+                          {unmaskedMap[`${u.id}_email`] ? u.email : maskEmail(u.email)}
+                        </span>
+                        <button
+                          onClick={() => toggleUnmask(u.id, "email")}
+                          className="p-0.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded transition-colors"
+                          title={unmaskedMap[`${u.id}_email`] ? "Sembunyikan Email" : "Tampilkan Email Lengkap"}
+                        >
+                          {unmaskedMap[`${u.id}_email`] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                        </button>
+                      </div>
+                    </td>
+
+                    {/* Phone with Eye Toggle */}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-xs text-gray-600">
+                          {unmaskedMap[`${u.id}_phone`] ? u.phone : maskPhone(u.phone)}
+                        </span>
+                        <button
+                          onClick={() => toggleUnmask(u.id, "phone")}
+                          className="p-0.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded transition-colors"
+                          title={unmaskedMap[`${u.id}_phone`] ? "Sembunyikan Phone" : "Tampilkan Phone Lengkap"}
+                        >
+                          {unmaskedMap[`${u.id}_phone`] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                        </button>
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-3 text-xs text-gray-600">{u.domisili}</td>
+                    <td className="py-3 px-3 text-xs text-gray-600">{formatDate(u.registeredAt)}</td>
+                    <td className="py-3 px-3 text-right">
+                      <button
+                        onClick={() => setSelectedUser(u)}
+                        className="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs font-semibold rounded-lg transition-colors inline-flex items-center gap-1 shadow-xs"
+                      >
+                        <HeartPulse className="size-3.5" /> Detail Kehamilan & Survei
+                      </button>
+                    </td>
+                  </tr>
+                ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 text-muted-foreground">
+                    <td colSpan={7} className="text-center py-12 text-muted-foreground">
                       Tidak ada pengguna ditemukan untuk filter ini
                     </td>
                   </tr>
@@ -664,107 +785,72 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* EXPANDED PREGNANCY DETAIL MODAL */}
-      {selectedUser && (
+      {/* PREGNANCY SURVEY DETAIL MODAL */}
+      {selectedUser && selectedUser.pregnancyProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" onClick={() => setSelectedUser(null)}>
-          <div className="relative max-w-xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="relative max-w-xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="size-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-extrabold text-lg">
-                  <HeartPulse className="size-6 text-pink-600" />
+                <div className="size-11 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-black text-lg">
+                  {selectedUser.name?.[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-gray-900">
-                      {unmaskedMap[`${selectedUser.id}_modal_name`] ? selectedUser.name : maskInitialsName(selectedUser.name)}
-                    </h2>
-                    <button
-                      onClick={() => toggleUnmask(selectedUser.id, "modal_name" as any)}
-                      className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
-                    >
-                      {unmaskedMap[`${selectedUser.id}_modal_name`] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-muted-foreground font-mono mt-0.5">ID Pengguna: #{selectedUser.id} • Registrasi {formatDate(selectedUser.registeredAt)}</p>
+                  <h2 className="text-lg font-bold text-gray-900">{selectedUser.name}</h2>
+                  <p className="text-xs text-muted-foreground font-mono">ID User: #{selectedUser.id}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedUser(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+              <button onClick={() => setSelectedUser(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
                 <X className="size-5" />
               </button>
             </div>
 
-            {/* Modal Content: Large & Prominent Pregnancy Metric Cards */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="p-4 rounded-xl bg-pink-50/80 border border-pink-200">
-                  <p className="text-xs font-bold text-pink-700 uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <UserCheck className="size-4 text-pink-600" /> Usia Pengguna
-                  </p>
-                  <p className="text-xl font-black text-gray-900">{selectedUser.pregnancyProfile?.usiaRange || "26-30 tahun"}</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200">
-                  <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <HeartPulse className="size-4 text-blue-600" /> Fase Kehamilan
-                  </p>
-                  <p className="text-xl font-black text-gray-900">{selectedUser.pregnancyProfile?.faseKehamilan || "Trimester 1"}</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-purple-50/80 border border-purple-200">
-                  <p className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <Calendar className="size-4 text-purple-600" /> Hamil Pertama
-                  </p>
-                  <p className="text-xl font-black text-gray-900">{selectedUser.pregnancyProfile?.kehamilanPertama || "Ya"}</p>
-                </div>
+            {/* User Contacts Info */}
+            <div className="grid grid-cols-2 gap-3 text-xs bg-pink-50/50 p-3 rounded-xl border border-pink-100">
+              <div>
+                <p className="text-gray-500 font-semibold flex items-center gap-1"><Mail className="size-3 text-pink-500" /> Email:</p>
+                <p className="font-mono font-bold text-gray-800 truncate">{selectedUser.email}</p>
               </div>
+              <div>
+                <p className="text-gray-500 font-semibold flex items-center gap-1"><Phone className="size-3 text-pink-500" /> Telepon:</p>
+                <p className="font-mono font-bold text-gray-800">{selectedUser.phone}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-gray-500 font-semibold flex items-center gap-1"><MapPin className="size-3 text-pink-500" /> Domisili:</p>
+                <p className="font-bold text-gray-800">{selectedUser.domisili}</p>
+              </div>
+            </div>
 
-              {/* Large Prominent Contact & Location Cards with Independent Eye Toggles */}
-              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-3">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Informasi Kontak & Domisili</h3>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
-                  <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5"><MapPin className="size-4 text-pink-500" /> Domisili Operasional:</span>
-                  <span className="font-bold text-sm text-gray-900">{selectedUser.domisili}</span>
+            {/* Survey Answers List */}
+            <div className="space-y-3 pt-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-pink-600 border-b pb-1">
+                Data Kehamilan & Survei User
+              </h3>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-3 bg-gray-50 rounded-xl border">
+                  <p className="text-gray-500">Usia:</p>
+                  <p className="font-bold text-gray-900">{selectedUser.pregnancyProfile.usiaRange}</p>
                 </div>
-
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
-                  <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5"><Mail className="size-4 text-blue-500" /> Email:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-gray-900">
-                      {unmaskedMap[`${selectedUser.id}_modal_email`] ? selectedUser.email : maskEmail(selectedUser.email)}
-                    </span>
-                    <button
-                      onClick={() => toggleUnmask(selectedUser.id, "modal_email" as any)}
-                      className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
-                    >
-                      {unmaskedMap[`${selectedUser.id}_modal_email`] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
+                <div className="p-3 bg-gray-50 rounded-xl border">
+                  <p className="text-gray-500">Fase Kehamilan:</p>
+                  <p className="font-bold text-gray-900">{selectedUser.pregnancyProfile.faseKehamilan}</p>
                 </div>
-
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
-                  <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5"><Phone className="size-4 text-emerald-500" /> No. Telepon:</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-gray-900">
-                      {unmaskedMap[`${selectedUser.id}_modal_phone`] ? selectedUser.phone : maskPhone(selectedUser.phone)}
-                    </span>
-                    <button
-                      onClick={() => toggleUnmask(selectedUser.id, "modal_phone" as any)}
-                      className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
-                    >
-                      {unmaskedMap[`${selectedUser.id}_modal_phone`] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                    </button>
-                  </div>
+                <div className="p-3 bg-gray-50 rounded-xl border">
+                  <p className="text-gray-500">Kehamilan Pertama:</p>
+                  <p className="font-bold text-gray-900">{selectedUser.pregnancyProfile.kehamilanPertama}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-xl border">
+                  <p className="text-gray-500">Tgl Registrasi App:</p>
+                  <p className="font-bold text-gray-900">{formatDate(selectedUser.registeredAt)}</p>
                 </div>
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="pt-4 border-t flex justify-end">
+            <div className="pt-2 border-t flex justify-end">
               <button
                 onClick={() => setSelectedUser(null)}
-                className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-bold transition-colors"
+                className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition-colors"
               >
                 Tutup Detail
               </button>

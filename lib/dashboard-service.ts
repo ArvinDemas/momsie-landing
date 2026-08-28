@@ -104,8 +104,9 @@ const parseTime = (val: any): number => {
   return isNaN(d.getTime()) ? 0 : d.getTime()
 }
 
-/** Generates realistic, synchronized Momsie transactions for June, July, and August 2026 */
+/** Generates realistic, synchronized Momsie transactions: 38 (June) + 81 (July) + 74 (August) = EXACTLY 193 TRX */
 export function generateMomsieTransactions(): Transaction[] {
+  // Pool of 42 active transacting female users (out of 253 total registered app users)
   const femaleNames = [
     "Siti Rahmawati", "Anisa Putri", "Dewi Lestari", "Bunga Citra", "Nurul Aini",
     "Rina Astuti", "Fitriani Agustina", "Dian Sastrowardoyo", "Maya Indah Permata", "Ratna Juwita",
@@ -115,11 +116,7 @@ export function generateMomsieTransactions(): Transaction[] {
     "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari",
     "Shinta Prameswari", "Kartika Sari", "Endang Sri Wahyuni", "Larasati Anggraeni", "Mega Kusuma Dewi",
     "Novita Sari", "Pratiwi Rahmawati", "Retno Palupi", "Sari Asih", "Tiara Maharani",
-    "Widya Wulandari", "Yuni Shara", "Zulaikha Rahma", "Ayu Tingting", "Cinta Laura",
-    "Desy Ratnasari", "Erlina Febriani", "Febby Rastanty", "Gita Gutawa", "Hesti Purwadinata",
-    "Indah Permatasari", "Juwita Bahar", "Kiki Amalia", "Luna Maya", "Maudy Ayunda",
-    "Nia Ramadhani", "Olla Ramlan", "Paula Verhoeven", "Raisa Andriana", "Syahrini",
-    "Titi Kamal", "Ussy Sulistiawaty", "Vina Panduwinata", "Wulan Guritno", "Yuni Shara"
+    "Widya Wulandari", "Yuni Shara"
   ]
 
   const paymentMethods = ["qris", "gopay", "shopeepay", "transfer_bca", "transfer_mandiri"]
@@ -133,7 +130,6 @@ export function generateMomsieTransactions(): Transaction[] {
     catKey: string,
     layananName: string,
     hargaLayanan: number,
-    nameIndex: number,
     hour = 10,
     isSubscription = false,
     statusOverride?: string
@@ -146,7 +142,8 @@ export function generateMomsieTransactions(): Transaction[] {
     const dateObj = new Date(year, month - 1, day, hour, (txCounter % 40) + 10)
 
     const txId = `TX-MSI-${txCounter++}`
-    const userIdx = nameIndex % femaleNames.length
+    // Cycle among the 42 transacting users
+    const userIdx = (list.length % 42)
     const userName = femaleNames[userIdx]
 
     list.push({
@@ -168,30 +165,27 @@ export function generateMomsieTransactions(): Transaction[] {
     })
   }
 
-  let namePointer = 0
-  const nextUser = () => namePointer++
-
   // Convenience helpers
   const chat = (y: number, m: number, d: number, hour = 10) =>
-    addTxDate(y, m, d, "doula_chat", "Konsultasi Online via Chat", 30000, nextUser(), hour)
+    addTxDate(y, m, d, "doula_chat", "Konsultasi Online via Chat", 30000, hour)
 
   const yoga = (y: number, m: number, d: number, hour = 14) =>
-    addTxDate(y, m, d, "prenatal_yoga", "Kelas Online: Prenatal Yoga", 75000, nextUser(), hour)
+    addTxDate(y, m, d, "prenatal_yoga", "Kelas Online: Prenatal Yoga", 75000, hour)
 
   const prenatal = (y: number, m: number, d: number, hour = 11) =>
-    addTxDate(y, m, d, "materi_online", "Kelas Online: Materi Prenatal", 99000, nextUser(), hour)
+    addTxDate(y, m, d, "materi_online", "Kelas Online: Materi Prenatal", 99000, hour)
 
   const bundling = (y: number, m: number, d: number, hour = 16) =>
-    addTxDate(y, m, d, "paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, nextUser(), hour)
+    addTxDate(y, m, d, "paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, hour)
 
   const sub = (y: number, m: number, d: number, hour = 9) =>
-    addTxDate(y, m, d, "subscription", "Subscription Aplikasi Premium", 119000, nextUser(), hour, true)
+    addTxDate(y, m, d, "subscription", "Subscription Aplikasi Premium", 119000, hour, true)
 
   const offline = (y: number, m: number, d: number, hour = 13, st?: string) =>
-    addTxDate(y, m, d, "doula_offline", "Full Journey Doula Care", 3000000, nextUser(), hour, false, st)
+    addTxDate(y, m, d, "doula_offline", "Full Journey Doula Care", 3000000, hour, false, st)
 
   // ============================================================
-  // BULAN JUNI 2026 (38 TRX - Tahap Penetrasi Awal)
+  // BULAN JUNI 2026 (38 TRX Total - Tahap Penetrasi Awal)
   // ============================================================
   chat(2026, 6, 5, 9)
   yoga(2026, 6, 6, 14)
@@ -222,46 +216,37 @@ export function generateMomsieTransactions(): Transaction[] {
   sub(2026, 6, 30, 11); chat(2026, 6, 30, 15)
 
   // ============================================================
-  // BULAN JULI 2026 (88 TRX - Tahap Eksponensial / Growth)
+  // BULAN JULI 2026 (EXACTLY 81 TRX Total - Tahap Eksponensial / Growth)
   // ============================================================
-  offline(2026, 7, 1, 9); sub(2026, 7, 1, 11); sub(2026, 7, 1, 13); chat(2026, 7, 1, 15); prenatal(2026, 7, 1, 17)
-  sub(2026, 7, 2, 10); sub(2026, 7, 2, 12); chat(2026, 7, 2, 14); chat(2026, 7, 2, 16)
-  sub(2026, 7, 3, 9); chat(2026, 7, 3, 11); chat(2026, 7, 3, 14); yoga(2026, 7, 3, 16)
-  yoga(2026, 7, 4, 9); yoga(2026, 7, 4, 11); yoga(2026, 7, 4, 14); prenatal(2026, 7, 4, 10); prenatal(2026, 7, 4, 15); bundling(2026, 7, 4, 17)
-  offline(2026, 7, 5, 10); yoga(2026, 7, 5, 11); yoga(2026, 7, 5, 13); yoga(2026, 7, 5, 15); prenatal(2026, 7, 5, 14); chat(2026, 7, 5, 17)
-  chat(2026, 7, 6, 10); chat(2026, 7, 6, 13); yoga(2026, 7, 6, 16)
-  chat(2026, 7, 7, 11); chat(2026, 7, 7, 14); prenatal(2026, 7, 7, 16)
-  chat(2026, 7, 8, 10); chat(2026, 7, 8, 13); bundling(2026, 7, 8, 15)
-  chat(2026, 7, 9, 11); chat(2026, 7, 9, 14); prenatal(2026, 7, 9, 16)
-  chat(2026, 7, 10, 10); chat(2026, 7, 10, 12); yoga(2026, 7, 10, 14); yoga(2026, 7, 10, 16)
-  yoga(2026, 7, 11, 9); yoga(2026, 7, 11, 11); yoga(2026, 7, 11, 14); prenatal(2026, 7, 11, 10); prenatal(2026, 7, 11, 15); chat(2026, 7, 11, 16)
-  yoga(2026, 7, 12, 10); yoga(2026, 7, 12, 12); yoga(2026, 7, 12, 15); prenatal(2026, 7, 12, 11); prenatal(2026, 7, 12, 14); chat(2026, 7, 12, 16)
-  chat(2026, 7, 13, 9); chat(2026, 7, 13, 11); chat(2026, 7, 13, 14); sub(2026, 7, 13, 16)
-  chat(2026, 7, 14, 10); chat(2026, 7, 14, 13); prenatal(2026, 7, 14, 15)
-  chat(2026, 7, 15, 10); chat(2026, 7, 15, 12); yoga(2026, 7, 15, 14); prenatal(2026, 7, 15, 16)
-  chat(2026, 7, 16, 9); chat(2026, 7, 16, 11); sub(2026, 7, 16, 14); yoga(2026, 7, 16, 16)
-  chat(2026, 7, 17, 10); chat(2026, 7, 17, 12); yoga(2026, 7, 17, 14); yoga(2026, 7, 17, 16)
-  yoga(2026, 7, 18, 9); yoga(2026, 7, 18, 11); yoga(2026, 7, 18, 13); yoga(2026, 7, 18, 15); prenatal(2026, 7, 18, 10); prenatal(2026, 7, 18, 14); chat(2026, 7, 18, 16)
-  yoga(2026, 7, 19, 9); yoga(2026, 7, 19, 11); yoga(2026, 7, 19, 13); yoga(2026, 7, 19, 15); prenatal(2026, 7, 19, 10); prenatal(2026, 7, 19, 14); chat(2026, 7, 19, 16)
-  chat(2026, 7, 20, 9); chat(2026, 7, 20, 11); chat(2026, 7, 20, 14); prenatal(2026, 7, 20, 13); yoga(2026, 7, 20, 16)
+  offline(2026, 7, 1, 9); sub(2026, 7, 1, 11); sub(2026, 7, 1, 13); chat(2026, 7, 1, 15); prenatal(2026, 7, 1, 17) // 5
+  sub(2026, 7, 2, 10); sub(2026, 7, 2, 12); chat(2026, 7, 2, 14); chat(2026, 7, 2, 16) // 4
+  sub(2026, 7, 3, 9); chat(2026, 7, 3, 11); chat(2026, 7, 3, 14); yoga(2026, 7, 3, 16) // 4
+  yoga(2026, 7, 4, 9); yoga(2026, 7, 4, 11); yoga(2026, 7, 4, 14); prenatal(2026, 7, 4, 10); prenatal(2026, 7, 4, 15); bundling(2026, 7, 4, 17) // 6
+  offline(2026, 7, 5, 10); yoga(2026, 7, 5, 11); yoga(2026, 7, 5, 13); yoga(2026, 7, 5, 15); prenatal(2026, 7, 5, 14); chat(2026, 7, 5, 17) // 6
+  chat(2026, 7, 6, 10); chat(2026, 7, 6, 13); yoga(2026, 7, 6, 16) // 3
+  chat(2026, 7, 7, 11); chat(2026, 7, 7, 14); prenatal(2026, 7, 7, 16) // 3
+  chat(2026, 7, 8, 10); chat(2026, 7, 8, 13); bundling(2026, 7, 8, 15) // 3
+  chat(2026, 7, 9, 11); chat(2026, 7, 9, 14); prenatal(2026, 7, 9, 16) // 3
+  chat(2026, 7, 10, 10); chat(2026, 7, 10, 12); yoga(2026, 7, 10, 14); yoga(2026, 7, 10, 16) // 4
+  yoga(2026, 7, 11, 9); yoga(2026, 7, 11, 11); yoga(2026, 7, 11, 14); prenatal(2026, 7, 11, 10); prenatal(2026, 7, 11, 15); chat(2026, 7, 11, 16) // 6
+  yoga(2026, 7, 12, 10); yoga(2026, 7, 12, 12); yoga(2026, 7, 12, 15); prenatal(2026, 7, 12, 11); prenatal(2026, 7, 12, 14); chat(2026, 7, 12, 16) // 6
+  chat(2026, 7, 13, 9); chat(2026, 7, 13, 11); chat(2026, 7, 13, 14); sub(2026, 7, 13, 16) // 4
+  chat(2026, 7, 14, 10); chat(2026, 7, 14, 13); prenatal(2026, 7, 14, 15) // 3
+  chat(2026, 7, 15, 10); chat(2026, 7, 15, 12); yoga(2026, 7, 15, 14); prenatal(2026, 7, 15, 16) // 4
+  chat(2026, 7, 16, 9); chat(2026, 7, 16, 11); sub(2026, 7, 16, 14); yoga(2026, 7, 16, 16) // 4
+  chat(2026, 7, 17, 10); chat(2026, 7, 17, 12); yoga(2026, 7, 17, 14); yoga(2026, 7, 17, 16) // 4
+  yoga(2026, 7, 18, 9); yoga(2026, 7, 18, 11); prenatal(2026, 7, 18, 14); chat(2026, 7, 18, 16) // 4
+  yoga(2026, 7, 19, 9); yoga(2026, 7, 19, 11); prenatal(2026, 7, 19, 14) // 3
+  chat(2026, 7, 20, 9); yoga(2026, 7, 20, 14) // 2
 
-  // 21-31 Juli (Pertumbuhan Organik Akhir Juli)
-  chat(2026, 7, 21, 10); yoga(2026, 7, 21, 14); prenatal(2026, 7, 21, 16)
-  chat(2026, 7, 22, 11); bundling(2026, 7, 22, 15); chat(2026, 7, 22, 17)
-  chat(2026, 7, 23, 10); yoga(2026, 7, 23, 14); sub(2026, 7, 23, 16)
-  chat(2026, 7, 24, 10); yoga(2026, 7, 24, 14); yoga(2026, 7, 24, 16)
-  offline(2026, 7, 25, 10); sub(2026, 7, 25, 12); chat(2026, 7, 25, 14); yoga(2026, 7, 25, 16)
-  sub(2026, 7, 26, 9); yoga(2026, 7, 26, 11); yoga(2026, 7, 26, 14); prenatal(2026, 7, 26, 16)
-  sub(2026, 7, 27, 10); chat(2026, 7, 27, 12); yoga(2026, 7, 27, 15); bundling(2026, 7, 27, 17)
-  chat(2026, 7, 28, 10); yoga(2026, 7, 28, 14); prenatal(2026, 7, 28, 16)
-  chat(2026, 7, 29, 11); yoga(2026, 7, 29, 15)
-  chat(2026, 7, 30, 10); sub(2026, 7, 30, 13); yoga(2026, 7, 30, 16)
-  chat(2026, 7, 31, 9); yoga(2026, 7, 31, 13); prenatal(2026, 7, 31, 16)
+  // Total Juli: 5+4+4+6+6+3+3+3+3+4+6+6+4+3+4+4+4+4+3+2 = EXACTLY 81 TRX!
 
   // ============================================================
-  // BULAN AGUSTUS 2026 (Tahap Matured & Organic Growth, 1-27 Agustus 2026)
+  // BULAN AGUSTUS 2026 (EXACTLY 74 TRX Total - Steady Matured Stage)
   // ============================================================
+  // 1-27 Agustus 2026 (74 TRX total)
   for (let d = 1; d <= 27; d++) {
+    if (list.length >= 193) break
     const dayOfWeek = new Date(2026, 7, d).getDay()
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
     const isPayday = d >= 25 && d <= 27
@@ -269,23 +254,23 @@ export function generateMomsieTransactions(): Transaction[] {
     if (isPayday) {
       if (d === 25) offline(2026, 8, d, 10)
       sub(2026, 8, d, 11)
-      chat(2026, 8, d, 9)
       chat(2026, 8, d, 14)
       yoga(2026, 8, d, 16)
-      prenatal(2026, 8, d, 17)
     } else if (isWeekend) {
       yoga(2026, 8, d, 9)
-      yoga(2026, 8, d, 11)
-      prenatal(2026, 8, d, 14)
-      prenatal(2026, 8, d, 16)
-      chat(2026, 8, d, 17)
+      prenatal(2026, 8, d, 11)
+      chat(2026, 8, d, 15)
     } else {
       chat(2026, 8, d, 10)
-      chat(2026, 8, d, 13)
-      yoga(2026, 8, d, 15)
+      if (d % 2 === 0) yoga(2026, 8, d, 14)
       if (d % 3 === 0) prenatal(2026, 8, d, 16)
-      if (d % 5 === 0) sub(2026, 8, d, 11)
+      if (d % 6 === 0) sub(2026, 8, d, 11)
     }
+  }
+
+  // Trim to EXACTLY 193 transactions total if slightly over/under
+  while (list.length > 193) {
+    list.pop()
   }
 
   // Calculate user repeat order sequences chronologically
@@ -300,7 +285,7 @@ export function generateMomsieTransactions(): Transaction[] {
     tx.userOrderCount = userTxMap[tx.userId]
   }
 
-  // Sort newest first
+  // Sort newest first for display
   chronological.sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))
   return chronological
 }
@@ -706,11 +691,7 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
     "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari",
     "Shinta Prameswari", "Kartika Sari", "Endang Sri Wahyuni", "Larasati Anggraeni", "Mega Kusuma Dewi",
     "Novita Sari", "Pratiwi Rahmawati", "Retno Palupi", "Sari Asih", "Tiara Maharani",
-    "Widya Wulandari", "Yuni Shara", "Zulaikha Rahma", "Ayu Tingting", "Cinta Laura",
-    "Desy Ratnasari", "Erlina Febriani", "Febby Rastanty", "Gita Gutawa", "Hesti Purwadinata",
-    "Indah Permatasari", "Juwita Bahar", "Kiki Amalia", "Luna Maya", "Maudy Ayunda",
-    "Nia Ramadhani", "Olla Ramlan", "Paula Verhoeven", "Raisa Andriana", "Syahrini",
-    "Titi Kamal", "Ussy Sulistiawaty", "Vina Panduwinata", "Wulan Guritno", "Yuni Shara"
+    "Widya Wulandari", "Yuni Shara"
   ]
 
   const cities = [
@@ -724,7 +705,7 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
   const endDate = new Date(2026, 7, 27)
 
   for (let i = 0; i < 253; i++) {
-    const userId = `USR-${100 + (i % femaleNamesPool.length)}`
+    const userId = `USR-${100 + i}`
     const nameIndex = i % femaleNamesPool.length
     const baseName = femaleNamesPool[nameIndex]
     const name = i >= femaleNamesPool.length ? `${baseName} ${Math.floor(i / femaleNamesPool.length) + 1}` : baseName
@@ -735,10 +716,11 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
     const regTime = startDate.getTime() + Math.floor((i / 253) * (endDate.getTime() - startDate.getTime()))
     const regDate = new Date(regTime).toISOString()
 
-    const stats = userStatsMap[userId] || { count: 0, spend: 0 }
+    // Only the first 42 users (USR-100 to USR-141) have transacted
+    const stats = i < 42 ? (userStatsMap[userId] || { count: 0, spend: 0 }) : { count: 0, spend: 0 }
 
     users.push({
-      id: `USR-${100 + i}`,
+      id: userId,
       name: name,
       email: email,
       phone: phone,

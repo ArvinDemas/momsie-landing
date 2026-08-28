@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, CreditCard } from "lucide-react"
+import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, Calendar } from "lucide-react"
 import { fetchTransactions, type Transaction } from "@/lib/dashboard-service"
 
 export default function TransaksiPage() {
@@ -13,6 +13,7 @@ export default function TransaksiPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [catFilter, setCatFilter] = useState("all")
+  const [monthFilter, setMonthFilter] = useState("all")
 
   useEffect(() => {
     fetchTransactions(1000)
@@ -29,13 +30,37 @@ export default function TransaksiPage() {
 
   useEffect(() => {
     let result = transactions
+
+    // Filter Month
+    if (monthFilter === "juni") {
+      result = result.filter(t => {
+        const d = new Date(t.createdAt)
+        return d.getMonth() === 5 && d.getFullYear() === 2026
+      })
+    } else if (monthFilter === "juli") {
+      result = result.filter(t => {
+        const d = new Date(t.createdAt)
+        return d.getMonth() === 6 && d.getFullYear() === 2026
+      })
+    } else if (monthFilter === "agustus") {
+      result = result.filter(t => {
+        const d = new Date(t.createdAt)
+        return d.getMonth() === 7 && d.getFullYear() === 2026
+      })
+    }
+
+    // Filter Status
     if (statusFilter !== "all") {
       const qStatus = statusFilter.toLowerCase()
       result = result.filter(t => (t.status || "").toLowerCase() === qStatus)
     }
+
+    // Filter Category
     if (catFilter !== "all") {
       result = result.filter(t => (t.jenisLayanan || "").toLowerCase().includes(catFilter.toLowerCase()))
     }
+
+    // Filter Search
     if (search) {
       const q = search.toLowerCase()
       result = result.filter(t =>
@@ -45,7 +70,7 @@ export default function TransaksiPage() {
       )
     }
     setFiltered(result)
-  }, [transactions, search, statusFilter, catFilter])
+  }, [transactions, search, statusFilter, catFilter, monthFilter])
 
   const formatRp = (n: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n)
 
@@ -80,6 +105,11 @@ export default function TransaksiPage() {
   const totalNominal = filtered.reduce((acc, t) => acc + (t.nominal || 0), 0)
   const totalPlatformFee = filtered.reduce((acc, t) => acc + (t.platformFee || 0), 0)
   const totalAdminFee = filtered.reduce((acc, t) => acc + (t.adminFee || 2500), 0)
+
+  // Monthly counts for tab selector labels
+  const juniCount = transactions.filter(t => { const d = new Date(t.createdAt); return d.getMonth() === 5 && d.getFullYear() === 2026 }).length
+  const juliCount = transactions.filter(t => { const d = new Date(t.createdAt); return d.getMonth() === 6 && d.getFullYear() === 2026 }).length
+  const agustusCount = transactions.filter(t => { const d = new Date(t.createdAt); return d.getMonth() === 7 && d.getFullYear() === 2026 }).length
 
   return (
     <div className="space-y-4">
@@ -170,6 +200,18 @@ export default function TransaksiPage() {
               />
             </div>
 
+            {/* Filter Period / Month */}
+            <select
+              value={monthFilter}
+              onChange={e => setMonthFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+            >
+              <option value="all">Semua Periode ({transactions.length} Transaksi)</option>
+              <option value="juni">Juni 2026 ({juniCount} Transaksi)</option>
+              <option value="juli">Juli 2026 ({juliCount} Transaksi)</option>
+              <option value="agustus">Agustus 2026 ({agustusCount} Transaksi)</option>
+            </select>
+
             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 rounded-lg border text-sm bg-white font-medium">
               <option value="all">Semua Status</option>
               <option value="completed">Completed (Selesai)</option>
@@ -203,7 +245,6 @@ export default function TransaksiPage() {
                   <th className="text-left py-3 px-2 font-medium">ID Transaksi</th>
                   <th className="text-left py-3 px-2 font-medium">Waktu Transaksi</th>
                   <th className="text-left py-3 px-2 font-medium">Pelanggan</th>
-                  <th className="text-center py-3 px-2 font-medium">Order Ke-</th>
                   <th className="text-left py-3 px-2 font-medium">Deskripsi Layanan</th>
                   <th className="text-left py-3 px-2 font-medium">Nominal Gross</th>
                   <th className="text-left py-3 px-2 font-medium">Biaya Admin</th>
@@ -220,18 +261,12 @@ export default function TransaksiPage() {
                   const hargaLayanan = tx.hargaLayanan || (nominal - adminFee)
                   const platformFee = isSub ? hargaLayanan : (tx.platformFee || Math.round(hargaLayanan * 0.20))
                   const doulaEarnings = isSub ? 0 : (tx.doulaEarnings || Math.round(hargaLayanan * 0.80))
-                  const seq = tx.orderSequence || 1
 
                   return (
                     <tr key={tx.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-2 font-mono text-xs font-semibold text-gray-700">{tx.id}</td>
                       <td className="py-3 px-2 text-xs text-gray-600">{formatDate(tx.createdAt)}</td>
                       <td className="py-3 px-2 font-semibold text-gray-900">{tx.namaUser}</td>
-                      <td className="py-3 px-2 text-center">
-                        <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 font-mono text-xs font-semibold">
-                          #{seq}
-                        </span>
-                      </td>
                       <td className="py-3 px-2 text-xs text-gray-800">{tx.deskripsi || tx.jenisLayanan}</td>
                       <td className="py-3 px-2 font-bold text-gray-900">{formatRp(nominal)}</td>
                       <td className="py-3 px-2 text-xs text-amber-700 font-medium">{formatRp(adminFee)}</td>
@@ -245,7 +280,7 @@ export default function TransaksiPage() {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="text-center py-12 text-muted-foreground">
+                    <td colSpan={9} className="text-center py-12 text-muted-foreground">
                       Tidak ada transaksi ditemukan
                     </td>
                   </tr>

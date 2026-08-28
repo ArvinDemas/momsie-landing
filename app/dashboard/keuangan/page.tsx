@@ -65,13 +65,6 @@ export default function KeuanganPage() {
           <h2 className="text-xl font-bold text-gray-800">Ringkasan Laporan Keuangan</h2>
           <p className="text-xs text-muted-foreground">Komisi Platform 20% + Biaya Admin Rp 2.500 per transaksi</p>
         </div>
-        <button
-          onClick={() => router.push("/checkout")}
-          className="flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-xl text-sm font-medium transition-colors"
-        >
-          <PlusCircle className="size-4" />
-          Buat Transaksi
-        </button>
       </div>
 
       {/* KPI Grid 5 Cards */}

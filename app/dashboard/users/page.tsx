@@ -119,31 +119,22 @@ export default function UsersPage() {
       })
   }, [])
 
+  const [selectedMonth, setSelectedMonth] = useState("all")
+  const [selectedYear, setSelectedYear] = useState("all")
+
   useEffect(() => {
     let result = users
 
-    // Period filter
-    if (periodFilter === "28_hari") {
-      const limitDate = new Date(2026, 7, 27 - 28)
-      result = result.filter(u => new Date(u.registeredAt) >= limitDate)
-    } else if (periodFilter === "90_hari") {
-      const limitDate = new Date(2026, 7, 27 - 90)
-      result = result.filter(u => new Date(u.registeredAt) >= limitDate)
-    } else if (periodFilter === "juni") {
-      result = result.filter(u => {
-        const d = new Date(u.registeredAt)
-        return d.getMonth() === 5 && d.getFullYear() === 2026
-      })
-    } else if (periodFilter === "juli") {
-      result = result.filter(u => {
-        const d = new Date(u.registeredAt)
-        return d.getMonth() === 6 && d.getFullYear() === 2026
-      })
-    } else if (periodFilter === "agustus") {
-      result = result.filter(u => {
-        const d = new Date(u.registeredAt)
-        return d.getMonth() === 7 && d.getFullYear() === 2026
-      })
+    // Filter Bulan
+    if (selectedMonth !== "all") {
+      const m = parseInt(selectedMonth) - 1
+      result = result.filter(u => new Date(u.registeredAt).getMonth() === m)
+    }
+
+    // Filter Tahun
+    if (selectedYear !== "all") {
+      const y = parseInt(selectedYear)
+      result = result.filter(u => new Date(u.registeredAt).getFullYear() === y)
     }
 
     // Search query
@@ -158,7 +149,7 @@ export default function UsersPage() {
     }
 
     setFiltered(result)
-  }, [users, search, periodFilter])
+  }, [users, search, selectedMonth, selectedYear])
 
   const formatDate = (val: string) => {
     if (!val) return "-"
@@ -517,18 +508,37 @@ export default function UsersPage() {
               />
             </div>
 
-            {/* Filter Periode Clean */}
+            {/* Separate Dropdown 1: Pilih Bulan */}
             <select
-              value={periodFilter}
-              onChange={e => setPeriodFilter(e.target.value)}
-              className="px-4 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="px-3.5 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
             >
-              <option value="all">Semua Periode</option>
-              <option value="28_hari">28 Hari Terakhir</option>
-              <option value="90_hari">90 Hari Terakhir</option>
-              <option value="juni">Juni 2026</option>
-              <option value="juli">Juli 2026</option>
-              <option value="agustus">Agustus 2026</option>
+              <option value="all">Semua Bulan</option>
+              <option value="1">Januari</option>
+              <option value="2">Februari</option>
+              <option value="3">Maret</option>
+              <option value="4">April</option>
+              <option value="5">Mei</option>
+              <option value="6">Juni</option>
+              <option value="7">Juli</option>
+              <option value="8">Agustus</option>
+              <option value="9">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">Desember</option>
+            </select>
+
+            {/* Separate Dropdown 2: Pilih Tahun */}
+            <select
+              value={selectedYear}
+              onChange={e => setSelectedYear(e.target.value)}
+              className="px-3.5 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+            >
+              <option value="all">Semua Tahun</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2027">2027</option>
             </select>
           </div>
         </CardContent>

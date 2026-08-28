@@ -13,7 +13,8 @@ export default function TransaksiPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [catFilter, setCatFilter] = useState("all")
-  const [monthFilter, setMonthFilter] = useState("all")
+  const [selectedMonth, setSelectedMonth] = useState("all")
+  const [selectedYear, setSelectedYear] = useState("all")
   const [rangeFilter, setRangeFilter] = useState("all")
 
   useEffect(() => {
@@ -32,22 +33,16 @@ export default function TransaksiPage() {
   useEffect(() => {
     let result = transactions
 
-    // Filter Month & Year
-    if (monthFilter === "juni") {
-      result = result.filter(t => {
-        const d = new Date(t.createdAt)
-        return d.getMonth() === 5 && d.getFullYear() === 2026
-      })
-    } else if (monthFilter === "juli") {
-      result = result.filter(t => {
-        const d = new Date(t.createdAt)
-        return d.getMonth() === 6 && d.getFullYear() === 2026
-      })
-    } else if (monthFilter === "agustus") {
-      result = result.filter(t => {
-        const d = new Date(t.createdAt)
-        return d.getMonth() === 7 && d.getFullYear() === 2026
-      })
+    // Filter Bulan
+    if (selectedMonth !== "all") {
+      const m = parseInt(selectedMonth) - 1
+      result = result.filter(t => new Date(t.createdAt).getMonth() === m)
+    }
+
+    // Filter Tahun
+    if (selectedYear !== "all") {
+      const y = parseInt(selectedYear)
+      result = result.filter(t => new Date(t.createdAt).getFullYear() === y)
     }
 
     // Filter Time Range (Hari Ini, 7 Hari Terakhir, 30 Hari Terakhir)
@@ -84,7 +79,7 @@ export default function TransaksiPage() {
       )
     }
     setFiltered(result)
-  }, [transactions, search, statusFilter, catFilter, monthFilter, rangeFilter])
+  }, [transactions, search, statusFilter, catFilter, selectedMonth, selectedYear, rangeFilter])
 
   const formatRp = (n: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n)
 
@@ -147,7 +142,7 @@ export default function TransaksiPage() {
         </div>
       </div>
 
-      {/* Financial KPI Banner with Repeat Order Ratio Summary */}
+      {/* Financial KPI Banner */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardContent className="pt-4 pb-4">
@@ -228,7 +223,7 @@ export default function TransaksiPage() {
         ))}
       </div>
 
-      {/* Filter Bar (Clean Labels: Month/Year, Timeframe, Category, Status) */}
+      {/* Filter Bar with 2 Separate Dropdowns: Pilih Bulan & Pilih Tahun */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-3">
@@ -242,19 +237,40 @@ export default function TransaksiPage() {
               />
             </div>
 
-            {/* Filter Month & Year */}
+            {/* Separate Dropdown 1: Pilih Bulan */}
             <select
-              value={monthFilter}
-              onChange={e => setMonthFilter(e.target.value)}
-              className="px-4 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+              value={selectedMonth}
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="px-3.5 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
             >
-              <option value="all">Semua Periode</option>
-              <option value="juni">Juni 2026</option>
-              <option value="juli">Juli 2026</option>
-              <option value="agustus">Agustus 2026</option>
+              <option value="all">Semua Bulan</option>
+              <option value="1">Januari</option>
+              <option value="2">Februari</option>
+              <option value="3">Maret</option>
+              <option value="4">April</option>
+              <option value="5">Mei</option>
+              <option value="6">Juni</option>
+              <option value="7">Juli</option>
+              <option value="8">Agustus</option>
+              <option value="9">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">Desember</option>
             </select>
 
-            {/* Filter Timeframe Range (Clean Labels without parenthetical text) */}
+            {/* Separate Dropdown 2: Pilih Tahun */}
+            <select
+              value={selectedYear}
+              onChange={e => setSelectedYear(e.target.value)}
+              className="px-3.5 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+            >
+              <option value="all">Semua Tahun</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2027">2027</option>
+            </select>
+
+            {/* Filter Timeframe Range */}
             <select
               value={rangeFilter}
               onChange={e => setRangeFilter(e.target.value)}
@@ -287,7 +303,7 @@ export default function TransaksiPage() {
         </CardContent>
       </Card>
 
-      {/* Clean Financial Data Table (Removed Tipe Order Column per request) */}
+      {/* Clean Financial Data Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Daftar Transaksi Pembayaran ({filtered.length})</CardTitle>

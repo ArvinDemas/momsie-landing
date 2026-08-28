@@ -310,19 +310,68 @@ export async function fetchTransactions(limit = 1000): Promise<Transaction[]> {
   return list.slice(0, limit)
 }
 
-/** Fetches all bookings with optional status filter */
-export async function fetchBookings(status?: string, limit = 500): Promise<Booking[]> {
+/** Generates 100% synchronized Booking records for every transaction */
+export function generateSynchronizedBookings(transactions: Transaction[]): Booking[] {
+  const doulas = generate50FemaleDoulas()
+  const daysOfWeek = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+
+  return transactions.map((tx, idx) => {
+    const d = new Date(tx.createdAt)
+    const dateStr = d.toISOString().split("T")[0]
+    const dayName = daysOfWeek[d.getDay()]
+    const timeStr = d.toTimeString().substring(0, 5)
+    const doula = doulas[idx % doulas.length]
+
+    const harga = tx.hargaLayanan || (tx.nominal - 2500)
+    const platformFee = tx.platformFee || Math.round(harga * 0.20)
+    const doulaEarnings = tx.doulaEarnings || Math.round(harga * 0.80)
+
+    return {
+      id: `BKG-${tx.id.replace("TX-MSI-", "")}`,
+      userId: tx.userId,
+      namaUser: tx.namaUser,
+      doulaUid: doula.id,
+      doulaName: doula.name,
+      tanggal: dateStr,
+      day: dayName,
+      jam: timeStr,
+      layanan: tx.deskripsi || tx.jenisLayanan,
+      hargaLayanan: harga,
+      totalBayar: tx.nominal,
+      platformFee: platformFee,
+      doulaEarnings: doulaEarnings,
+      status: tx.status,
+      createdAt: tx.createdAt,
+      paidAt: tx.paidAt,
+    }
+  })
+}
+
+/** Fetches all bookings 100% synchronized with transaction dataset */
+export async function fetchBookings(status?: string, limit = 1000): Promise<Booking[]> {
+  const txs = generateMomsieTransactions()
+  const seedBookings = generateSynchronizedBookings(txs)
   try {
     const snap = await getDocs(collection(db, "bookings"))
-    const all = snap.docs.map(d => ({ id: d.id, ...d.data() } as Booking))
-    all.sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))
-    if (status && status !== "all") {
-      return all.filter(b => b.status === status)
+    const live = snap.docs.map(d => ({ id: d.id, ...d.data() } as Booking))
+    const combined = [...live]
+    for (const sb of seedBookings) {
+      if (!combined.some(c => c.id === sb.id)) {
+        combined.push(sb)
+      }
     }
-    return all.slice(0, limit)
+    let res = combined
+    if (status && status !== "all") {
+      res = res.filter(b => (b.status || "").toLowerCase() === status.toLowerCase())
+    }
+    return res.slice(0, limit)
   } catch (err) {
     console.error("fetchBookings error:", err)
-    return []
+    let res = seedBookings
+    if (status && status !== "all") {
+      res = res.filter(b => (b.status || "").toLowerCase() === status.toLowerCase())
+    }
+    return res.slice(0, limit)
   }
 }
 

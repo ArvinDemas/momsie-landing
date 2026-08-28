@@ -205,12 +205,12 @@ export default function BookingPage() {
             <select
               value={monthFilter}
               onChange={e => setMonthFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+              className="px-4 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
             >
-              <option value="all">Semua Bulan ({bookings.length} Booking)</option>
-              <option value="juni">Juni 2026 ({juniCount} Booking)</option>
-              <option value="juli">Juli 2026 ({juliCount} Booking)</option>
-              <option value="agustus">Agustus 2026 ({agustusCount} Booking)</option>
+              <option value="all">Semua Bulan</option>
+              <option value="juni">Juni 2026</option>
+              <option value="juli">Juli 2026</option>
+              <option value="agustus">Agustus 2026</option>
             </select>
 
             {/* Filter Rentang Waktu (Hari, Minggu, Bulan) */}
@@ -220,9 +220,9 @@ export default function BookingPage() {
               className="px-3 py-2 rounded-lg border text-sm bg-white font-medium"
             >
               <option value="all">Semua Rentang Waktu</option>
-              <option value="hari_ini">Hari Ini (Per Hari)</option>
-              <option value="7_hari">7 Hari Terakhir (Per Minggu)</option>
-              <option value="30_hari">30 Hari Terakhir (Per Bulan)</option>
+              <option value="hari_ini">Hari Ini</option>
+              <option value="7_hari">7 Hari Terakhir</option>
+              <option value="30_hari">30 Hari Terakhir</option>
             </select>
 
             {/* Filter Status */}

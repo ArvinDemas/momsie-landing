@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, RefreshCw, Eye } from "lucide-react"
+import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, RefreshCw } from "lucide-react"
 import { fetchTransactions, type Transaction } from "@/lib/dashboard-service"
 
 export default function TransaksiPage() {
@@ -14,6 +14,7 @@ export default function TransaksiPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [catFilter, setCatFilter] = useState("all")
   const [monthFilter, setMonthFilter] = useState("all")
+  const [rangeFilter, setRangeFilter] = useState("all")
 
   useEffect(() => {
     fetchTransactions(1000)
@@ -31,7 +32,7 @@ export default function TransaksiPage() {
   useEffect(() => {
     let result = transactions
 
-    // Filter Month
+    // Filter Month & Year
     if (monthFilter === "juni") {
       result = result.filter(t => {
         const d = new Date(t.createdAt)
@@ -47,6 +48,19 @@ export default function TransaksiPage() {
         const d = new Date(t.createdAt)
         return d.getMonth() === 7 && d.getFullYear() === 2026
       })
+    }
+
+    // Filter Time Range (Hari Ini, 7 Hari Terakhir, 30 Hari Terakhir)
+    const now = new Date(2026, 7, 27) // 27 August 2026
+    if (rangeFilter === "hari_ini") {
+      const todayStr = "2026-08-27"
+      result = result.filter(t => (t.createdAt && t.createdAt.startsWith(todayStr)))
+    } else if (rangeFilter === "7_hari") {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      result = result.filter(t => new Date(t.createdAt) >= sevenDaysAgo)
+    } else if (rangeFilter === "30_hari") {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      result = result.filter(t => new Date(t.createdAt) >= thirtyDaysAgo)
     }
 
     // Filter Status
@@ -70,7 +84,7 @@ export default function TransaksiPage() {
       )
     }
     setFiltered(result)
-  }, [transactions, search, statusFilter, catFilter, monthFilter])
+  }, [transactions, search, statusFilter, catFilter, monthFilter, rangeFilter])
 
   const formatRp = (n: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n)
 
@@ -105,7 +119,10 @@ export default function TransaksiPage() {
 
   const totalNominal = filtered.reduce((acc, t) => acc + (t.nominal || 0), 0)
   const totalPlatformFee = filtered.reduce((acc, t) => acc + (t.platformFee || 0), 0)
-  const totalAdminFee = filtered.reduce((acc, t) => acc + (t.adminFee || 2500), 0)
+
+  // Calculate Repeat Order Ratio percentage for Summary Banner
+  const repeatOrdersCount = filtered.filter(t => t.isRepeatOrder).length
+  const repeatOrderRatio = filtered.length > 0 ? ((repeatOrdersCount / filtered.length) * 100).toFixed(1) : "0.0"
 
   // Category quick filter options
   const categoryQuickFilters = [
@@ -125,12 +142,12 @@ export default function TransaksiPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Laporan Transaksi</h1>
           <p className="text-sm text-muted-foreground">
-            Riwayat transaksi pembayaran masuk, rincian biaya admin, komisi platform, dan hak pendapatan mitra.
+            Riwayat transaksi pembayaran masuk, omset gross, rasio repeat order, komisi platform, dan hak pendapatan mitra.
           </p>
         </div>
       </div>
 
-      {/* Financial KPI Banner */}
+      {/* Financial KPI Banner with Repeat Order Ratio Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardContent className="pt-4 pb-4">
@@ -177,16 +194,17 @@ export default function TransaksiPage() {
           </CardContent>
         </Card>
 
+        {/* REPEAT ORDER RATIO SUMMARY CARD */}
         <Card className="bg-white border-gray-200 shadow-sm">
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Biaya Admin App</p>
-                <p className="text-2xl font-extrabold text-amber-900 mt-1">{formatRp(totalAdminFee)}</p>
-                <p className="text-[11px] text-amber-600 mt-0.5">@ Rp 2.500 / Transaksi</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Rasio Repeat Order</p>
+                <p className="text-2xl font-extrabold text-blue-900 mt-1">{repeatOrderRatio}%</p>
+                <p className="text-[11px] text-blue-600 mt-0.5">{repeatOrdersCount} Order Pengulangan</p>
               </div>
-              <div className="p-3 rounded-xl bg-amber-100 text-amber-700">
-                <Wallet className="size-5" />
+              <div className="p-3 rounded-xl bg-blue-100 text-blue-700">
+                <RefreshCw className="size-5" />
               </div>
             </div>
           </CardContent>
@@ -210,7 +228,7 @@ export default function TransaksiPage() {
         ))}
       </div>
 
-      {/* Filter Bar (Clean Labels without Numbers or Prices in parentheses) */}
+      {/* Filter Bar (Clean Labels: Month/Year, Timeframe, Category, Status) */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-3">
@@ -224,7 +242,7 @@ export default function TransaksiPage() {
               />
             </div>
 
-            {/* Filter Period / Month (Clean Labels without counts in parentheses) */}
+            {/* Filter Month & Year */}
             <select
               value={monthFilter}
               onChange={e => setMonthFilter(e.target.value)}
@@ -236,7 +254,19 @@ export default function TransaksiPage() {
               <option value="agustus">Agustus 2026</option>
             </select>
 
-            {/* Filter Category (Clean Labels without prices in parentheses) */}
+            {/* Filter Timeframe Range (Clean Labels without parenthetical text) */}
+            <select
+              value={rangeFilter}
+              onChange={e => setRangeFilter(e.target.value)}
+              className="px-3 py-2 rounded-lg border text-sm bg-white font-medium"
+            >
+              <option value="all">Semua Rentang Waktu</option>
+              <option value="hari_ini">Hari Ini</option>
+              <option value="7_hari">7 Hari Terakhir</option>
+              <option value="30_hari">30 Hari Terakhir</option>
+            </select>
+
+            {/* Filter Category */}
             <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="px-3 py-2 rounded-lg border text-sm bg-white font-medium">
               <option value="all">Semua Kategori</option>
               <option value="doula_chat">Doula Chat</option>
@@ -257,7 +287,7 @@ export default function TransaksiPage() {
         </CardContent>
       </Card>
 
-      {/* Clean Financial Data Table with Tipe Order Column & Ongoing Full Journey Status */}
+      {/* Clean Financial Data Table (Removed Tipe Order Column per request) */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Daftar Transaksi Pembayaran ({filtered.length})</CardTitle>
@@ -271,7 +301,6 @@ export default function TransaksiPage() {
                   <th className="text-left py-3 px-3 font-medium">Waktu Transaksi</th>
                   <th className="text-left py-3 px-3 font-medium">Pelanggan</th>
                   <th className="text-left py-3 px-3 font-medium">Deskripsi Layanan</th>
-                  <th className="text-left py-3 px-3 font-medium">Tipe Order</th>
                   <th className="text-left py-3 px-3 font-medium">Nominal Gross</th>
                   <th className="text-left py-3 px-3 font-medium">Platform Fee</th>
                   <th className="text-left py-3 px-3 font-medium">Hak Doula</th>
@@ -293,25 +322,11 @@ export default function TransaksiPage() {
                       <td className="py-3 px-3 text-xs text-gray-600">{formatDate(tx.createdAt)}</td>
                       <td className="py-3 px-3 font-semibold text-gray-900">{tx.namaUser}</td>
                       <td className="py-3 px-3 text-xs text-gray-800">{tx.deskripsi || tx.jenisLayanan}</td>
-
-                      {/* Clean & Professional Tipe Order Column */}
-                      <td className="py-3 px-3">
-                        {tx.isRepeatOrder ? (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-xs">
-                            Repeat Order
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 font-medium text-xs">
-                            Order Pertama
-                          </Badge>
-                        )}
-                      </td>
-
                       <td className="py-3 px-3 font-bold text-gray-900">{formatRp(nominal)}</td>
                       <td className="py-3 px-3 text-xs text-purple-700 font-semibold">{formatRp(platformFee)}</td>
                       <td className="py-3 px-3 text-xs text-emerald-700 font-bold">{isSub ? "-" : formatRp(doulaEarnings)}</td>
 
-                      {/* Status Column (Full Journey Doula Care shows BERJALAN) */}
+                      {/* Status Column */}
                       <td className="py-3 px-3">
                         {renderStatusBadge(tx.status)}
                       </td>
@@ -320,7 +335,7 @@ export default function TransaksiPage() {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="text-center py-12 text-muted-foreground">
+                    <td colSpan={8} className="text-center py-12 text-muted-foreground">
                       Tidak ada transaksi ditemukan untuk filter ini
                     </td>
                   </tr>

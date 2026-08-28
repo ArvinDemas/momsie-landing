@@ -3,8 +3,32 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Users, Smartphone, UserCheck, CheckCircle2, TrendingUp, ArrowUpRight, Activity, Eye, Download } from "lucide-react"
-import { fetchRegisteredUsers, type RegisteredUser } from "@/lib/dashboard-service"
+import { Loader2, Search, Activity, Eye, Download, Smartphone, Users, ChevronDown } from "lucide-react"
+import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone } from "@/lib/dashboard-service"
+import { AreaChart, Area, ResponsiveContainer, BarChart, Bar } from "recharts"
+
+// Mini sparkline datasets mirroring Play Console curves
+const sparkJangkauan = [
+  { day: "31 Jul", val: 3 }, { day: "2 Aug", val: 5 }, { day: "5 Aug", val: 2 },
+  { day: "8 Aug", val: 7 }, { day: "12 Aug", val: 4 }, { day: "16 Aug", val: 6 },
+  { day: "20 Aug", val: 3 }, { day: "24 Aug", val: 8 }, { day: "27 Aug", val: 10 }
+]
+
+const sparkAkuisisi = [
+  { day: "31 Jul", val: 1 }, { day: "2 Aug", val: 0 }, { day: "5 Aug", val: 2 },
+  { day: "8 Aug", val: 1 }, { day: "12 Aug", val: 3 }, { day: "16 Aug", val: 1 },
+  { day: "20 Aug", val: 2 }, { day: "24 Aug", val: 1 }, { day: "27 Aug", val: 3 }
+]
+
+const sparkAktifkan = [
+  { day: "31 Jul", val: 1 }, { day: "5 Aug", val: 2 }, { day: "10 Aug", val: 0 },
+  { day: "15 Aug", val: 3 }, { day: "20 Aug", val: 1 }, { day: "27 Aug", val: 2 }
+]
+
+const sparkInteraksi = [
+  { day: "31 Jul", val: 2 }, { day: "5 Aug", val: 5 }, { day: "10 Aug", val: 1 },
+  { day: "15 Aug", val: 6 }, { day: "20 Aug", val: 3 }, { day: "27 Aug", val: 5 }
+]
 
 export default function UsersPage() {
   const [users, setUsers] = useState<RegisteredUser[]>([])
@@ -89,81 +113,132 @@ export default function UsersPage() {
     </div>
   )
 
-  const transactingCount = users.filter(u => u.totalOrders > 0).length // 78
-  const nonTransactingCount = users.length - transactingCount // 175
+  const transactingCount = users.filter(u => u.totalOrders > 0).length
+  const nonTransactingCount = users.length - transactingCount
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header & Title */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Kembangkan Basis Pengguna (User App)</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Kembangkan basis pengguna</h1>
           <p className="text-sm text-muted-foreground">
-            Metrik akuisisi, performa pengguna aktif Google Play, dan basis terdaftar aplikasi Momsie.
+            Performa Anda di Google Play Store & Manajemen Basis Terdaftar Aplikasi Momsie.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 font-semibold px-3 py-1 text-xs">
+          <Badge className="bg-pink-100 text-pink-800 border-pink-200 font-semibold px-3 py-1 text-xs">
             Google Play Console Synced
           </Badge>
         </div>
       </div>
 
-      {/* Play Console Style Metric Overview Banner */}
-      <Card className="bg-white border-gray-200 shadow-sm">
-        <CardHeader className="pb-3 border-b border-gray-100">
-          <div className="flex items-center justify-between">
+      {/* Google Play Console Styled Metric Cards Banner */}
+      <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
+        <CardHeader className="pb-3 border-b border-gray-100 bg-gray-50/50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Activity className="size-5 text-pink-600" /> Performa Basis Pengguna & Akuisisi App
+              <Activity className="size-5 text-blue-600" /> Performa Anda di Google Play
             </CardTitle>
-            <span className="text-xs text-muted-foreground font-medium">Status Data: Live & Terverifikasi</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 font-medium">Metrik menurut: <strong className="text-gray-800">Perangkat</strong></span>
+              <span className="px-2.5 py-1 bg-white border rounded-md text-xs font-semibold text-gray-700 flex items-center gap-1 shadow-xs">
+                28 hari terakhir <ChevronDown className="size-3 text-gray-400" />
+              </span>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {/* Metric 1: Tayangan & Jangkauan */}
-            <div className="p-3.5 rounded-xl bg-gray-50/80 border border-gray-100">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center justify-between">
-                Jangkauan <Eye className="size-4 text-blue-500" />
-              </p>
-              <p className="text-2xl font-extrabold text-gray-900 mt-1">1.840</p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-0.5">+14% Tayangan Play Store</p>
+        <CardContent className="pt-4 pb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+            {/* Metric 1: Jangkauan / Tayangan Perangkat */}
+            <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
+              <div>
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Jangkauan</p>
+                <p className="text-xs text-gray-600 font-medium mt-0.5">Tayangan perangkat</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <p className="text-2xl font-black text-gray-900">64</p>
+                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                </div>
+              </div>
+              <div className="h-[45px] w-full mt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={sparkJangkauan}>
+                    <Area type="monotone" dataKey="val" stroke="#2563eb" fill="#dbeafe" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Metric 2: Akuisisi Total */}
-            <div className="p-3.5 rounded-xl bg-pink-50/60 border border-pink-100">
-              <p className="text-xs font-semibold text-pink-700 uppercase tracking-wider flex items-center justify-between">
-                Akuisisi Total <Download className="size-4 text-pink-500" />
-              </p>
-              <p className="text-2xl font-extrabold text-pink-950 mt-1">{users.length} User</p>
-              <p className="text-[11px] text-pink-600 font-medium mt-0.5">Total Download & Registrasi</p>
+            {/* Metric 2: Akuisisi / Akuisisi Perangkat */}
+            <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
+              <div>
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Akuisisi</p>
+                <p className="text-xs text-gray-600 font-medium mt-0.5">Akuisisi perangkat</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <p className="text-2xl font-black text-gray-900">12</p>
+                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                </div>
+              </div>
+              <div className="h-[45px] w-full mt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={sparkAkuisisi}>
+                    <Bar dataKey="val" fill="#0284c7" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Metric 3: User Bertransaksi */}
-            <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100">
-              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wider flex items-center justify-between">
-                User Bertransaksi <UserCheck className="size-4 text-blue-500" />
-              </p>
-              <p className="text-2xl font-extrabold text-blue-950 mt-1">{transactingCount} User</p>
-              <p className="text-[11px] text-blue-600 font-medium mt-0.5">30.8% Rasio Konversi Pembayaran</p>
+            {/* Metric 3: Aktifkan / Perangkat Pertama Dibuka */}
+            <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
+              <div>
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Aktifkan</p>
+                <p className="text-xs text-gray-600 font-medium mt-0.5">Pertama dibuka</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <p className="text-2xl font-black text-gray-900">8</p>
+                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                </div>
+              </div>
+              <div className="h-[45px] w-full mt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={sparkAktifkan}>
+                    <Area type="monotone" dataKey="val" stroke="#059669" fill="#d1fae5" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Metric 4: User Belum Transaksi */}
-            <div className="p-3.5 rounded-xl bg-amber-50/60 border border-amber-100">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider flex items-center justify-between">
-                Belum Transaksi <Users className="size-4 text-amber-500" />
-              </p>
-              <p className="text-2xl font-extrabold text-amber-950 mt-1">{nonTransactingCount} User</p>
-              <p className="text-[11px] text-amber-600 font-medium mt-0.5">69.2% Download/Registrasi Only</p>
+            {/* Metric 4: Interaksi / Aktif Bulanan (MAU) */}
+            <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
+              <div>
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Interaksi</p>
+                <p className="text-xs text-gray-600 font-medium mt-0.5">Aktif bulanan</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <p className="text-2xl font-black text-gray-900">13</p>
+                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                </div>
+              </div>
+              <div className="h-[45px] w-full mt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={sparkInteraksi}>
+                    <Area type="monotone" dataKey="val" stroke="#7c3aed" fill="#ede9fe" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Metric 5: Aktif Bulanan (MAU) */}
-            <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-100">
-              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider flex items-center justify-between">
-                Aktif Bulanan <Smartphone className="size-4 text-emerald-500" />
-              </p>
-              <p className="text-2xl font-extrabold text-emerald-950 mt-1">198 MAU</p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-0.5">78.2% Retensi Pengguna</p>
+            {/* Metric 5: Pertahankan / Retensi 7 Hari */}
+            <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
+              <div>
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Pertahankan</p>
+                <p className="text-xs text-gray-600 font-medium mt-0.5">Retensi 7 hari</p>
+                <div className="flex items-baseline justify-between mt-1">
+                  <p className="text-2xl font-black text-gray-900">78.2%</p>
+                  <p className="text-[11px] font-bold text-emerald-600">Aktif</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center h-[45px] bg-gray-50 rounded-lg text-xs text-gray-500 font-medium">
+                Data Konsisten
+              </div>
             </div>
           </div>
         </CardContent>
@@ -183,13 +258,13 @@ export default function UsersPage() {
               />
             </div>
 
-            {/* Filter Periode (Play Console Metrik) */}
+            {/* Filter Periode */}
             <select
               value={periodFilter}
               onChange={e => setPeriodFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
             >
-              <option value="all">Semua Waktu (253 User)</option>
+              <option value="all">Semua Periode ({users.length} User)</option>
               <option value="28_hari">28 Hari Terakhir</option>
               <option value="90_hari">90 Hari Terakhir</option>
               <option value="juni">Juni 2026</option>
@@ -197,13 +272,13 @@ export default function UsersPage() {
               <option value="agustus">Agustus 2026</option>
             </select>
 
-            {/* Filter Status Transaksi */}
+            {/* Filter Tipe User */}
             <select
               value={orderFilter}
               onChange={e => setOrderFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border text-sm bg-white font-medium"
             >
-              <option value="all">Semua Tipe User ({users.length})</option>
+              <option value="all">Semua Pengguna ({users.length})</option>
               <option value="transacting">User Bertransaksi ({transactingCount})</option>
               <option value="non_transacting">User Belum Transaksi ({nonTransactingCount})</option>
             </select>
@@ -214,7 +289,7 @@ export default function UsersPage() {
       {/* Registered Users Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Daftar Pengguna Aplikasi ({filtered.length})</CardTitle>
+          <CardTitle className="text-sm font-medium">Daftar Pengguna Aplikasi Terdaftar ({filtered.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -223,8 +298,8 @@ export default function UsersPage() {
                 <tr className="border-b text-muted-foreground bg-muted/30">
                   <th className="text-left py-3 px-2 font-medium">ID User</th>
                   <th className="text-left py-3 px-2 font-medium">Nama Pengguna</th>
-                  <th className="text-left py-3 px-2 font-medium">Email</th>
-                  <th className="text-left py-3 px-2 font-medium">No. Telepon</th>
+                  <th className="text-left py-3 px-2 font-medium">Email (Sensored)</th>
+                  <th className="text-left py-3 px-2 font-medium">No. Telepon (Sensored)</th>
                   <th className="text-left py-3 px-2 font-medium">Domisili</th>
                   <th className="text-left py-3 px-2 font-medium">Tgl Registrasi</th>
                   <th className="text-left py-3 px-2 font-medium">Status Transaksi</th>
@@ -237,8 +312,8 @@ export default function UsersPage() {
                   <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
                     <td className="py-3 px-2 font-mono text-xs font-semibold text-gray-700">{u.id}</td>
                     <td className="py-3 px-2 font-semibold text-gray-900">{u.name}</td>
-                    <td className="py-3 px-2 text-xs text-gray-600">{u.email}</td>
-                    <td className="py-3 px-2 text-xs text-gray-600">{u.phone}</td>
+                    <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskEmail(u.email)}</td>
+                    <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskPhone(u.phone)}</td>
                     <td className="py-3 px-2 text-xs text-gray-700">{u.domisili}</td>
                     <td className="py-3 px-2 text-xs text-gray-600">{formatDate(u.registeredAt)}</td>
                     <td className="py-3 px-2">

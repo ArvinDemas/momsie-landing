@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, CheckCircle, XCircle, Eye } from "lucide-react"
+import { Loader2, Search, CheckCircle, XCircle, Eye, UserCheck, MapPin, FileText, Phone, Mail, CreditCard, ShieldCheck, X } from "lucide-react"
 import Image from "next/image"
 import { doc, updateDoc, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { fetchSubmissions as fetchSubmissionsService, type Submission } from "@/lib/dashboard-service"
+import { fetchSubmissions as fetchSubmissionsService, type Submission, maskPhone, maskEmail } from "@/lib/dashboard-service"
 
 interface MitraSubmission {
   id: string
+  numericId: string
   userId: string
   userEmail: string
   userName: string
@@ -31,7 +32,11 @@ export default function MitraPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  
+  // Detail Modal state
+  const [selectedMitra, setSelectedMitra] = useState<MitraSubmission | null>(null)
   const [viewingDoc, setViewingDoc] = useState<{ url: string; label: string } | null>(null)
+
   const [rejectId, setRejectId] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState("")
   const [processing, setProcessing] = useState<string | null>(null)
@@ -40,9 +45,12 @@ export default function MitraPage() {
     setLoading(true)
     try {
       const data = await fetchSubmissionsService()
-      console.log("[Mitra] fetched:", data.length, "submissions")
-      setSubmissions(data)
-      setFiltered(data)
+      const formatted: MitraSubmission[] = data.map((s, idx) => ({
+        ...s,
+        numericId: String(1001 + idx),
+      }))
+      setSubmissions(formatted)
+      setFiltered(formatted)
     } catch (err) {
       console.error("Failed to fetch submissions:", err)
     } finally {
@@ -61,7 +69,7 @@ export default function MitraPage() {
       const q = search.toLowerCase()
       result = result.filter(s =>
         s.userName.toLowerCase().includes(q) ||
-        s.userId.toLowerCase().includes(q) ||
+        s.numericId.includes(q) ||
         s.nik.includes(q) ||
         s.userEmail.toLowerCase().includes(q)
       )
@@ -73,28 +81,15 @@ export default function MitraPage() {
     setProcessing(id)
     try {
       const subRef = doc(db, "sop_submissions", id)
-      const subSnap = await getDoc(subRef)
-      const subData = subSnap.data()
-
-      // Update submission
       await updateDoc(subRef, {
         status: "approved",
         reviewedAt: new Date().toISOString(),
       })
 
-      // Update mitra doc
-      if (subData?.userId) {
-        const mitraRef = doc(db, "mitra", subData.userId)
-        await updateDoc(mitraRef, {
-          role: subData?.role || "doula",
-          nik: subData?.nik,
-          nohp: subData?.nohp,
-          kotaProvinsi: subData?.kotaProvinsi,
-          sopApprovedAt: new Date().toISOString(),
-        })
-      }
-
       setSubmissions(prev => prev.map(s => s.id === id ? { ...s, status: "approved" } : s))
+      if (selectedMitra?.id === id) {
+        setSelectedMitra(prev => prev ? { ...prev, status: "approved" } : null)
+      }
     } catch (err) {
       console.error("Failed to approve:", err)
     } finally {
@@ -114,6 +109,9 @@ export default function MitraPage() {
       })
 
       setSubmissions(prev => prev.map(s => s.id === rejectId ? { ...s, status: "rejected", rejectionReason: rejectReason.trim() } : s))
+      if (selectedMitra?.id === rejectId) {
+        setSelectedMitra(prev => prev ? { ...prev, status: "rejected", rejectionReason: rejectReason.trim() } : null)
+      }
       setRejectId(null)
       setRejectReason("")
     } catch (err) {
@@ -129,16 +127,22 @@ export default function MitraPage() {
     </div>
   )
 
+  const statusBadge = (s: string) => {
+    if (s === "approved") return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 font-semibold">Disetujui</Badge>
+    if (s === "rejected") return <Badge className="bg-red-100 text-red-800 border-red-200 font-semibold">Ditolak</Badge>
+    return <Badge className="bg-amber-100 text-amber-800 border-amber-200 font-semibold">Pending</Badge>
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Panel Mitra</h1>
-          <p className="text-sm text-muted-foreground">Kelola pendaftaran mitra baru (SOP)</p>
+          <h1 className="text-2xl font-bold tracking-tight">Panel Mitra Doula</h1>
+          <p className="text-sm text-muted-foreground">Kelola pendaftaran mitra baru (SOP Verification)</p>
         </div>
         <div className="text-sm text-muted-foreground">
-          Total: <span className="font-semibold text-foreground">{submissions.length}</span>
+          Total Mitra: <span className="font-bold text-gray-900">{submissions.length}</span>
         </div>
       </div>
 
@@ -151,8 +155,8 @@ export default function MitraPage() {
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Cari nama, NIK, atau email..."
-                className="w-full h-9 rounded-md border border-input bg-background px-3 pl-9 py-1 text-sm"
+                placeholder="Cari ID Angka atau Nama Mitra..."
+                className="w-full pl-9 pr-4 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-pink-400 outline-none"
               />
             </div>
             <div className="flex gap-2">
@@ -167,7 +171,7 @@ export default function MitraPage() {
                   onClick={() => setStatusFilter(key)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     statusFilter === key
-                      ? "bg-pink-500 text-white"
+                      ? "bg-pink-500 text-white font-semibold"
                       : "bg-card border text-muted-foreground hover:bg-muted"
                   }`}
                 >
@@ -179,220 +183,204 @@ export default function MitraPage() {
         </CardContent>
       </Card>
 
-      {/* Cards */}
-      {filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-16 text-center text-muted-foreground">
-            Tidak ada data mitra{search || statusFilter !== "all" ? " dengan filter ini" : ""}.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {filtered.map(sub => (
-            <MitraCard
-              key={sub.id}
-              sub={sub}
-              viewingDoc={viewingDoc}
-              onViewDoc={(url, label) => setViewingDoc({ url, label })}
-              onApprove={handleApprove}
-              onReject={() => { setRejectId(sub.id); setRejectReason(sub.rejectionReason || "") }}
-              onCancelReject={() => { setRejectId(null); setRejectReason("") }}
-              onSubmitReject={handleReject}
-              processing={processing === sub.id}
-              isRejecting={rejectId === sub.id}
-              rejectReason={rejectId === sub.id ? rejectReason : ""}
-              setRejectReason={setRejectReason}
-            />
-          ))}
+      {/* Clean Mitra List (Shows ONLY ID Angka, Nama Mitra, Role, Status & Tombol Detail) */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Daftar Registrasi Mitra ({filtered.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-muted-foreground bg-muted/30">
+                  <th className="text-left py-3 px-3 font-medium">ID Mitra</th>
+                  <th className="text-left py-3 px-3 font-medium">Nama Mitra</th>
+                  <th className="text-left py-3 px-3 font-medium">Role</th>
+                  <th className="text-left py-3 px-3 font-medium">Tgl Pengajuan</th>
+                  <th className="text-left py-3 px-3 font-medium">Status</th>
+                  <th className="text-right py-3 px-3 font-medium">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(sub => (
+                  <tr key={sub.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                    <td className="py-3 px-3 font-mono font-bold text-gray-800 text-xs">{sub.numericId}</td>
+                    <td className="py-3 px-3 font-bold text-gray-900">{sub.userName}</td>
+                    <td className="py-3 px-3 text-xs text-gray-700 font-medium capitalize">{sub.role || "Doula Care"}</td>
+                    <td className="py-3 px-3 text-xs text-gray-600">
+                      {sub.submittedAt
+                        ? new Date(sub.submittedAt).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })
+                        : "-"}
+                    </td>
+                    <td className="py-3 px-3">{statusBadge(sub.status)}</td>
+                    <td className="py-3 px-3 text-right">
+                      <button
+                        onClick={() => setSelectedMitra(sub)}
+                        className="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white font-medium text-xs rounded-lg transition-colors inline-flex items-center gap-1 shadow-xs"
+                      >
+                        <Eye className="size-3.5" /> Detail Mitra
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-12 text-muted-foreground">
+                      Tidak ada data pendaftaran mitra ditemukan
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* DETAIL MODAL (Displays NIK, Contact, Location, Documents, & Approval Controls) */}
+      {selectedMitra && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" onClick={() => setSelectedMitra(null)}>
+          <div className="relative max-w-xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-extrabold text-base">
+                  {selectedMitra.userName?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">{selectedMitra.userName}</h2>
+                  <p className="text-xs text-muted-foreground font-mono">ID Mitra: #{selectedMitra.numericId}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedMitra(null)} className="p-1 rounded-lg text-gray-400 hover:bg-gray-100">
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {/* Modal Content Details */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="p-3 rounded-xl bg-gray-50 border">
+                  <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
+                    <CreditCard className="size-3.5 text-pink-500" /> NIK KTP
+                  </p>
+                  <p className="font-mono font-bold text-gray-900">{selectedMitra.nik || "-"}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-gray-50 border">
+                  <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
+                    <ShieldCheck className="size-3.5 text-pink-500" /> Role Mitra
+                  </p>
+                  <p className="font-bold text-gray-900 capitalize">{selectedMitra.role || "Doula"}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-gray-50 border">
+                  <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
+                    <Phone className="size-3.5 text-pink-500" /> No. Telepon
+                  </p>
+                  <p className="font-mono font-bold text-gray-900">{maskPhone(selectedMitra.nohp)}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-gray-50 border">
+                  <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
+                    <Mail className="size-3.5 text-pink-500" /> Email Registrasi
+                  </p>
+                  <p className="font-mono text-xs font-bold text-gray-900 truncate">{maskEmail(selectedMitra.userEmail)}</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-gray-50 border">
+                <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
+                  <MapPin className="size-3.5 text-pink-500" /> Kota / Domisili Operasional
+                </p>
+                <p className="font-bold text-gray-900">{selectedMitra.kotaProvinsi || "DI Yogyakarta"}</p>
+              </div>
+
+              {/* Documents Buttons */}
+              <div className="pt-2">
+                <p className="text-xs font-semibold text-gray-700 mb-2">Dokumen Pendukung (KTP & Sertifikat):</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedMitra.ktpUrl && (
+                    <button
+                      onClick={() => setViewingDoc({ url: selectedMitra.ktpUrl!, label: `KTP - ${selectedMitra.userName}` })}
+                      className="px-3.5 py-2 rounded-lg text-xs font-medium border bg-white hover:bg-pink-50 hover:border-pink-200 transition-colors flex items-center gap-1.5"
+                    >
+                      <Eye className="size-4 text-pink-500" /> Lihat Dokumen KTP
+                    </button>
+                  )}
+                  {selectedMitra.sertifikatUrl && (
+                    <button
+                      onClick={() => setViewingDoc({ url: selectedMitra.sertifikatUrl!, label: `Sertifikat - ${selectedMitra.userName}` })}
+                      className="px-3.5 py-2 rounded-lg text-xs font-medium border bg-white hover:bg-pink-50 hover:border-pink-200 transition-colors flex items-center gap-1.5"
+                    >
+                      <Eye className="size-4 text-pink-500" /> Lihat Sertifikat Pelatihan
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Rejection Reason display */}
+              {selectedMitra.status === "rejected" && selectedMitra.rejectionReason && (
+                <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700">
+                  <span className="font-bold">Alasan Penolakan:</span> {selectedMitra.rejectionReason}
+                </div>
+              )}
+
+              {/* Reject Input */}
+              {rejectId === selectedMitra.id && (
+                <div className="space-y-2 pt-2 border-t">
+                  <textarea
+                    value={rejectReason}
+                    onChange={e => setRejectReason(e.target.value)}
+                    placeholder="Tuliskan alasan penolakan..."
+                    className="w-full rounded-lg border p-2.5 text-xs outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={() => setRejectId(null)} className="px-3 py-1.5 rounded-lg border text-xs font-medium">Batal</button>
+                    <button onClick={handleReject} disabled={!rejectReason.trim()} className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold disabled:opacity-50">Tolak Mitra</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            {selectedMitra.status === "pending" && rejectId !== selectedMitra.id && (
+              <div className="flex gap-2 pt-3 border-t justify-end">
+                <button
+                  onClick={() => setRejectId(selectedMitra.id)}
+                  className="px-4 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold hover:bg-red-50 transition-colors"
+                >
+                  Tolak Mitra
+                </button>
+                <button
+                  onClick={() => handleApprove(selectedMitra.id)}
+                  disabled={processing === selectedMitra.id}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors inline-flex items-center gap-1.5"
+                >
+                  {processing === selectedMitra.id ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle className="size-3.5" />}
+                  Setujui Mitra (Approve)
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Image Dialog */}
+      {/* Image Preview Modal */}
       {viewingDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setViewingDoc(null)}>
-          <div className="relative max-w-2xl w-full bg-background rounded-2xl p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="font-semibold">{viewingDoc.label}</p>
-              <button onClick={() => setViewingDoc(null)} className="p-1 rounded-lg hover:bg-muted">
-                <XCircle className="size-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setViewingDoc(null)}>
+          <div className="relative max-w-2xl w-full bg-white rounded-2xl p-4 shadow-2xl space-y-3" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b pb-2">
+              <p className="font-bold text-sm">{viewingDoc.label}</p>
+              <button onClick={() => setViewingDoc(null)} className="p-1 rounded-lg hover:bg-gray-100">
+                <X className="size-5" />
               </button>
             </div>
-            <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-muted">
-              <Image
-                src={viewingDoc.url}
-                alt={viewingDoc.label}
-                fill
-                className="object-contain"
-              />
+            <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-gray-100">
+              <Image src={viewingDoc.url} alt={viewingDoc.label} fill className="object-contain" />
             </div>
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-function MitraCard({
-  sub,
-  viewingDoc,
-  onViewDoc,
-  onApprove,
-  onReject,
-  onCancelReject,
-  onSubmitReject,
-  processing,
-  isRejecting,
-  rejectReason,
-  setRejectReason,
-}: {
-  sub: MitraSubmission
-  viewingDoc: { url: string; label: string } | null
-  onViewDoc: (url: string, label: string) => void
-  onApprove: (id: string) => void
-  onReject: () => void
-  onCancelReject: () => void
-  onSubmitReject: () => void
-  processing: boolean
-  isRejecting: boolean
-  rejectReason: string
-  setRejectReason: (v: string | ((prev: string) => string)) => void
-}) {
-  const statusBadge = (s: string) => {
-    if (s === "approved") return <Badge variant="success">Disetujui</Badge>
-    if (s === "rejected") return <Badge variant="destructive">Ditolak</Badge>
-    return <Badge>Pending</Badge>
-  }
-
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-4">
-          {/* Top Row */}
-          <div className="flex items-start gap-4">
-            <div className="size-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-bold text-lg shrink-0">
-              {sub.userName?.[0]?.toUpperCase() || "M"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="font-semibold text-base truncate">{sub.userName}</p>
-                {statusBadge(sub.status)}
-              </div>
-              <p className="text-sm text-muted-foreground truncate">{sub.userEmail}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                ID: <span className="font-mono">{sub.userId}</span>
-              </p>
-            </div>
-            <div className="text-right text-xs text-muted-foreground shrink-0">
-              <p>Diajukan</p>
-              <p className="font-medium text-foreground">
-                {sub.submittedAt
-                  ? new Date(sub.submittedAt).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })
-                  : "-"}
-              </p>
-            </div>
-          </div>
-
-          {/* Details Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <DetailItem label="NIK" value={sub.nik} />
-            <DetailItem label="No HP" value={sub.nohp} />
-            <DetailItem label="Role" value={sub.role} />
-            <DetailItem label="Kota/Provinsi" value={sub.kotaProvinsi} />
-          </div>
-
-          {/* Documents */}
-          <div className="flex flex-wrap gap-2">
-            {sub.ktpUrl && (
-              <button
-                onClick={() => onViewDoc(sub.ktpUrl!, "KTP")}
-                className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                  viewingDoc?.url === sub.ktpUrl
-                    ? "ring-2 ring-pink-500 bg-pink-50"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <Eye className="size-3.5 inline mr-1.5 -mt-0.5" /> Lihat KTP
-              </button>
-            )}
-            {sub.sertifikatUrl && (
-              <button
-                onClick={() => onViewDoc(sub.sertifikatUrl!, "Sertifikat")}
-                className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                  viewingDoc?.url === sub.sertifikatUrl
-                    ? "ring-2 ring-pink-500 bg-pink-50"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <Eye className="size-3.5 inline mr-1.5 -mt-0.5" /> Lihat Sertifikat
-              </button>
-            )}
-          </div>
-
-          {/* Rejection Reason */}
-          {sub.status === "rejected" && sub.rejectionReason && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-              <span className="font-semibold">Alasan Penolakan:</span> {sub.rejectionReason}
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          {sub.status === "pending" && (
-            <div className="flex gap-2 pt-2 border-t">
-              <button
-                onClick={() => onApprove(sub.id)}
-                disabled={processing}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-              >
-                {processing ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle className="size-3.5" />}
-                Approve
-              </button>
-              <button
-                onClick={onReject}
-                disabled={processing}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
-              >
-                <XCircle className="size-3.5" /> Tolak
-              </button>
-            </div>
-          )}
-
-          {/* Reject Form */}
-          {isRejecting && sub.status === "pending" && (
-            <div className="flex flex-col gap-2 pt-2 border-t">
-              <textarea
-                value={rejectReason}
-                onChange={e => setRejectReason(e.target.value)}
-                placeholder="Alasan penolakan (opsional)..."
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[60px]"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={onSubmitReject}
-                  disabled={!rejectReason.trim() || processing}
-                  className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
-                  Konfirmasi Tolak
-                </button>
-                <button
-                  onClick={onCancelReject}
-                  className="px-4 py-2 rounded-lg border text-sm font-medium hover:bg-muted transition-colors"
-                >
-                  Batal
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function DetailItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="font-medium text-sm">{value || "-"}</p>
     </div>
   )
 }

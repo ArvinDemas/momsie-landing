@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, CheckCircle, Clock, Search, Calendar, CalendarDays, Users, Wallet } from "lucide-react"
+import { Loader2, CheckCircle, Clock, Search, CalendarDays, AlertCircle } from "lucide-react"
 import { db } from "@/lib/firebase"
 import { fetchBookings, type Booking } from "@/lib/dashboard-service"
 import { doc, updateDoc } from "firebase/firestore"
@@ -110,7 +110,7 @@ export default function BookingPage() {
 
   const completedCount = filtered.filter(b => b.status === "completed").length
   const ongoingCount = filtered.filter(b => b.status === "ongoing" || b.status === "confirmed").length
-  const totalEarned = filtered.reduce((acc, b) => acc + (b.doulaEarnings || 0), 0)
+  const pendingCount = filtered.filter(b => b.status === "pending" || b.status === "paid").length
 
   return (
     <div className="space-y-4">
@@ -119,12 +119,12 @@ export default function BookingPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Manajemen Booking & Pendampingan</h1>
           <p className="text-sm text-muted-foreground">
-            Jadwal sesi pendampingan Doula, status pelaksanaan, dan pendapatan mitra ter-sinkronisasi.
+            Jadwal sesi pendampingan Doula dan status pelaksanaan ter-sinkronisasi.
           </p>
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards (No Platform Fee / Doula Earn per request) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-white shadow-sm border-gray-200">
           <CardContent className="pt-4 pb-4">
@@ -175,12 +175,12 @@ export default function BookingPage() {
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Hak Pendapatan Doula</p>
-                <p className="text-2xl font-extrabold text-blue-900 mt-1">{formatRp(totalEarned)}</p>
-                <p className="text-[11px] text-blue-600 mt-0.5">80% Hak Mitra</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Menunggu / Pending</p>
+                <p className="text-2xl font-extrabold text-amber-900 mt-1">{pendingCount} Sesi</p>
+                <p className="text-[11px] text-amber-600 mt-0.5">Menunggu Konfirmasi</p>
               </div>
-              <div className="p-3 rounded-xl bg-blue-100 text-blue-700">
-                <Wallet className="size-5" />
+              <div className="p-3 rounded-xl bg-amber-100 text-amber-700">
+                <AlertCircle className="size-5" />
               </div>
             </div>
           </CardContent>
@@ -241,7 +241,7 @@ export default function BookingPage() {
         </CardContent>
       </Card>
 
-      {/* Booking Cards List */}
+      {/* Booking Cards List (Platform fee & Hak Doula hidden per request) */}
       <div className="grid gap-3">
         {filtered.map(b => {
           const cfg = statusConfig[b.status] || { label: b.status, color: "bg-gray-100 text-gray-700" }
@@ -264,9 +264,8 @@ export default function BookingPage() {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-base font-extrabold text-gray-900">{formatRp(b.totalBayar || b.hargaLayanan)}</p>
-                    <p className="text-xs text-purple-700 font-medium">Platform Fee: {formatRp(b.platformFee || 0)}</p>
-                    <p className="text-xs text-emerald-700 font-semibold">Hak Doula (80%): {formatRp(b.doulaEarnings || 0)}</p>
+                    <p className="text-xl font-extrabold text-gray-900">{formatRp(b.totalBayar || b.hargaLayanan)}</p>
+                    <span className="text-[11px] text-gray-400 font-medium">Layanan + Admin</span>
                   </div>
 
                   <div className="flex gap-2">

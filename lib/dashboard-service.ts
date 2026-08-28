@@ -353,7 +353,13 @@ export async function fetchBookings(status?: string, limit = 1000): Promise<Book
   const seedBookings = generateSynchronizedBookings(txs)
   try {
     const snap = await getDocs(collection(db, "bookings"))
-    const live = snap.docs.map(d => ({ id: d.id, ...d.data() } as Booking))
+    const live = snap.docs
+      .map(d => ({ id: d.id, ...d.data() } as Booking))
+      .filter(b => {
+        const u = (b.namaUser || "").toLowerCase()
+        const dName = (b.doulaName || "").toLowerCase()
+        return !u.includes("arvin") && !u.includes("demas") && !dName.includes("arvin") && !dName.includes("demas")
+      })
     const combined = [...live]
     for (const sb of seedBookings) {
       if (!combined.some(c => c.id === sb.id)) {
@@ -373,6 +379,25 @@ export async function fetchBookings(status?: string, limit = 1000): Promise<Book
     }
     return res.slice(0, limit)
   }
+}
+
+export function maskEmail(email: string): string {
+  if (!email || !email.includes("@")) return email
+  const [name, domain] = email.split("@")
+  if (name.length <= 2) return `${name[0]}*@${domain}`
+  const first = name[0]
+  const last = name[name.length - 1]
+  const stars = "*".repeat(Math.min(name.length - 2, 8))
+  return `${first}${stars}${last}@${domain}`
+}
+
+export function maskPhone(phone: string): string {
+  if (!phone) return phone
+  const clean = phone.replace(/[^0-9]/g, "")
+  if (clean.length <= 4) return clean
+  const prefix = clean.substring(0, 4)
+  const suffix = clean.substring(clean.length - 3)
+  return `${prefix}*****${suffix}`
 }
 
 /** Generates 50 Indonesian female doulas + 3 original doulas with On-going & Certified mix */

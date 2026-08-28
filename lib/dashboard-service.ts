@@ -517,10 +517,11 @@ export async function fetchDoulas(): Promise<Mitra[]> {
         combined.push(sd)
       }
     }
-    return combined
+    // Filter out "Arvin Demas Naryama" per user request
+    return combined.filter(d => !d.name.toLowerCase().includes("arvin") && !d.name.toLowerCase().includes("demas"))
   } catch (err) {
     console.error("fetchDoulas error:", err)
-    return seedDoulas
+    return seedDoulas.filter(d => !d.name.toLowerCase().includes("arvin") && !d.name.toLowerCase().includes("demas"))
   }
 }
 

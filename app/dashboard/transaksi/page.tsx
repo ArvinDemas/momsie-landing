@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, RefreshCw } from "lucide-react"
-import { fetchTransactions, type Transaction } from "@/lib/dashboard-service"
+import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, RefreshCw, Eye, EyeOff } from "lucide-react"
+import { fetchTransactions, type Transaction, maskInitialsName } from "@/lib/dashboard-service"
 
 export default function TransaksiPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -16,6 +16,9 @@ export default function TransaksiPage() {
   const [selectedMonth, setSelectedMonth] = useState("all")
   const [selectedYear, setSelectedYear] = useState("all")
   const [rangeFilter, setRangeFilter] = useState("all")
+
+  // Independent Unsensor Map for Customer Names (Keyed by tx.id)
+  const [unmaskedMap, setUnmaskedMap] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     fetchTransactions(1000)
@@ -223,7 +226,7 @@ export default function TransaksiPage() {
         ))}
       </div>
 
-      {/* Filter Bar with 2 Separate Dropdowns: Pilih Bulan & Pilih Tahun */}
+      {/* Filter Bar */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-3">
@@ -303,7 +306,7 @@ export default function TransaksiPage() {
         </CardContent>
       </Card>
 
-      {/* Clean Financial Data Table */}
+      {/* Clean Financial Data Table with Masked Customer Names & Eye Toggle */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Daftar Transaksi Pembayaran ({filtered.length})</CardTitle>
@@ -336,7 +339,23 @@ export default function TransaksiPage() {
                     <tr key={tx.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-3 font-mono text-xs font-semibold text-gray-700">{tx.id}</td>
                       <td className="py-3 px-3 text-xs text-gray-600">{formatDate(tx.createdAt)}</td>
-                      <td className="py-3 px-3 font-semibold text-gray-900">{tx.namaUser}</td>
+
+                      {/* Customer Name with Masking and Eye Toggle */}
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-gray-900">
+                            {unmaskedMap[tx.id] ? tx.namaUser : maskInitialsName(tx.namaUser)}
+                          </span>
+                          <button
+                            onClick={() => setUnmaskedMap(prev => ({ ...prev, [tx.id]: !prev[tx.id] }))}
+                            className="p-0.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded transition-colors"
+                            title={unmaskedMap[tx.id] ? "Sembunyikan Nama" : "Tampilkan Nama Lengkap"}
+                          >
+                            {unmaskedMap[tx.id] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                          </button>
+                        </div>
+                      </td>
+
                       <td className="py-3 px-3 text-xs text-gray-800">{tx.deskripsi || tx.jenisLayanan}</td>
                       <td className="py-3 px-3 font-bold text-gray-900">{formatRp(nominal)}</td>
                       <td className="py-3 px-3 text-xs text-purple-700 font-semibold">{formatRp(platformFee)}</td>

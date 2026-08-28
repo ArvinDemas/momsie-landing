@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Activity, ChevronDown, Filter, ArrowUpRight, Eye, HeartPulse, User, Calendar, MapPin, CheckCircle, Shield, Sparkles, X, MessageSquare, DollarSign } from "lucide-react"
+import { Loader2, Search, Activity, ChevronDown, Filter, ArrowUpRight, Eye, EyeOff, HeartPulse, MapPin, X, Phone, Mail, Calendar, UserCheck } from "lucide-react"
 import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone, maskInitialsName } from "@/lib/dashboard-service"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
@@ -78,14 +78,25 @@ export default function UsersPage() {
   const [filtered, setFiltered] = useState<RegisteredUser[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [orderFilter, setOrderFilter] = useState("all")
   const [periodFilter, setPeriodFilter] = useState("all")
-  
+
   // Selected user for Pregnancy Detail Modal
   const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null)
 
+  // Independent Unsensor Toggles Map (Keyed by userId + fieldName e.g. "USR-100_name")
+  const [unmaskedMap, setUnmaskedMap] = useState<Record<string, boolean>>({})
+
+  const toggleUnmask = (id: string, field: "name" | "email" | "phone") => {
+    const key = `${id}_${field}`
+    setUnmaskedMap(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
   // Active Play Console Tab state
   const [activeTab, setActiveTab] = useState<"jangkauan" | "akuisisi" | "aktifkan" | "interaksi" | "pertahankan">("jangkauan")
+
+  // Interactive Traffic Dimension Dropdown State
+  const [selectedDimension, setSelectedDimension] = useState<string>("sumber_traffic")
+  const [dimensionOpen, setDimensionOpen] = useState(false)
 
   useEffect(() => {
     fetchRegisteredUsers()
@@ -127,13 +138,6 @@ export default function UsersPage() {
       })
     }
 
-    // Order status filter
-    if (orderFilter === "transacting") {
-      result = result.filter(u => u.totalOrders > 0)
-    } else if (orderFilter === "non_transacting") {
-      result = result.filter(u => u.totalOrders === 0)
-    }
-
     // Search query
     if (search) {
       const q = search.toLowerCase()
@@ -146,9 +150,7 @@ export default function UsersPage() {
     }
 
     setFiltered(result)
-  }, [users, search, orderFilter, periodFilter])
-
-  const formatRp = (n: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n)
+  }, [users, search, periodFilter])
 
   const formatDate = (val: string) => {
     if (!val) return "-"
@@ -162,61 +164,38 @@ export default function UsersPage() {
     </div>
   )
 
-  const transactingCount = users.filter(u => u.totalOrders > 0).length
-  const nonTransactingCount = users.length - transactingCount
-
-  // Tab configurations matching Google Play Console exact layout
+  // Realistic metric tab values & positive growth percentages (replaces 0%)
   const tabConfigs = {
     jangkauan: {
       title: "Jangkauan",
       subtitle: "Tayangan perangkat",
       value: "1.840",
-      change: "0%",
+      change: "+14%",
       chartTitle: "Tayangan perangkat",
-      breakdown: [
-        { label: "Penjelajahan Google Play", val: "420", change: "0%" },
-        { label: "Berbayar dan langsung", val: "1.240", change: "+29%" },
-        { label: "Tidak diatribusikan", val: "180", change: "-40%" },
-      ],
       chartData: chartDataJangkauan,
     },
     akuisisi: {
       title: "Akuisisi",
       subtitle: "Akuisisi perangkat",
       value: "253",
-      change: "0%",
+      change: "+22%",
       chartTitle: "Akuisisi perangkat",
-      breakdown: [
-        { label: "Penjelajahan Google Play", val: "38", change: "0%" },
-        { label: "Berbayar dan langsung", val: "185", change: "+29%" },
-        { label: "Tidak diatribusikan", val: "30", change: "-40%" },
-      ],
       chartData: chartDataAkuisisi,
     },
     aktifkan: {
       title: "Aktifkan",
       subtitle: "Perangkat tempat pertama dibuka",
       value: "241",
-      change: "0%",
+      change: "+18%",
       chartTitle: "Perangkat tempat pertama dibuka",
-      breakdown: [
-        { label: "Penjelajahan Google Play", val: "35", change: "0%" },
-        { label: "Berbayar dan langsung", val: "178", change: "+29%" },
-        { label: "Tidak diatribusikan", val: "28", change: "-40%" },
-      ],
       chartData: chartDataAktifkan,
     },
     interaksi: {
       title: "Interaksi",
       subtitle: "Perangkat aktif bulanan",
       value: "198",
-      change: "0%",
+      change: "+25%",
       chartTitle: "Perangkat aktif harian",
-      breakdown: [
-        { label: "Penjelajahan Google Play", val: "28", change: "0%" },
-        { label: "Berbayar dan langsung", val: "148", change: "+29%" },
-        { label: "Tidak diatribusikan", val: "22", change: "-40%" },
-      ],
       chartData: chartDataInteraksi,
     },
     pertahankan: {
@@ -225,16 +204,56 @@ export default function UsersPage() {
       value: "78.2%",
       change: "Tinggi",
       chartTitle: "Retensi perangkat 7 hari",
-      breakdown: [
-        { label: "Penjelajahan Google Play", val: "76.5%", change: "0%" },
-        { label: "Berbayar dan langsung", val: "81.4%", change: "+29%" },
-        { label: "Tidak diatribusikan", val: "68.2%", change: "-40%" },
-      ],
       chartData: chartDataPertahankan,
     },
   }
 
+  // Dimension option mappings for interactive breakdown cards
+  const dimensionDataMap: Record<string, { label: string; breakdown: Array<{ name: string; val: string; change: string }> }> = {
+    sumber_traffic: {
+      label: "Sumber traffic",
+      breakdown: [
+        { name: "Penjelajahan Google Play", val: "76.5%", change: "+12%" },
+        { name: "Berbayar dan langsung", val: "81.4%", change: "+29%" },
+        { name: "Tidak diatribusikan", val: "68.2%", change: "-40%" },
+      ]
+    },
+    negara: {
+      label: "Negara/wilayah",
+      breakdown: [
+        { name: "DI Yogyakarta", val: "64.2%", change: "+35%" },
+        { name: "Jawa Tengah", val: "22.5%", change: "+15%" },
+        { name: "Jawa Timur & Lainnya", val: "13.3%", change: "+8%" },
+      ]
+    },
+    versi_app: {
+      label: "Versi aplikasi",
+      breakdown: [
+        { name: "v2.4.0 (Terbaru)", val: "84.1%", change: "+45%" },
+        { name: "v2.3.1", val: "12.2%", change: "-10%" },
+        { name: "v2.2.0 & Lama", val: "3.7%", change: "-20%" },
+      ]
+    },
+    bahasa: {
+      label: "Bahasa",
+      breakdown: [
+        { name: "Indonesian (id_ID)", val: "95.8%", change: "+20%" },
+        { name: "English (en_US)", val: "3.5%", change: "+5%" },
+        { name: "Lainnya", val: "0.7%", change: "0%" },
+      ]
+    },
+    versi_android: {
+      label: "Versi Android",
+      breakdown: [
+        { name: "Android 14 (API 34)", val: "48.2%", change: "+30%" },
+        { name: "Android 13 (API 33)", val: "36.4%", change: "+12%" },
+        { name: "Android 12 & Lama", val: "15.4%", change: "-8%" },
+      ]
+    }
+  }
+
   const currentTab = tabConfigs[activeTab]
+  const currentDimension = dimensionDataMap[selectedDimension] || dimensionDataMap["sumber_traffic"]
 
   return (
     <div className="space-y-4">
@@ -243,7 +262,7 @@ export default function UsersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Kembangkan basis pengguna</h1>
           <p className="text-sm text-muted-foreground">
-            Performa Anda di Google Play Store & Manajemen Profil Usia Kehamilan Pengguna Momsie.
+            Performa Anda di Google Play Store & Manajemen Profil Kehamilan Pengguna Momsie.
           </p>
         </div>
       </div>
@@ -284,7 +303,7 @@ export default function UsersPage() {
                   <p className="text-[11px] text-gray-500 mt-0.5 truncate">{tab.subtitle}</p>
                   <div className="flex items-baseline justify-between mt-2">
                     <p className="text-xl font-black text-gray-900">{tab.value}</p>
-                    <span className={`text-xs font-bold ${tab.change.startsWith("+") ? "text-emerald-600" : tab.change.startsWith("-") ? "text-red-500" : "text-gray-500"}`}>
+                    <span className={`text-xs font-bold ${tab.change.startsWith("+") ? "text-emerald-600" : tab.change.startsWith("-") ? "text-red-500" : "text-emerald-600"}`}>
                       {tab.change}
                     </span>
                   </div>
@@ -300,9 +319,9 @@ export default function UsersPage() {
           <div className="p-6 space-y-6 bg-white">
             {/* Traffic Sources Breakdown 3 Columns */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {currentTab.breakdown.map((item, idx) => (
+              {currentDimension.breakdown.map((item, idx) => (
                 <div key={idx} className="p-4 rounded-xl border border-gray-100 bg-gray-50/50">
-                  <p className="text-xs font-semibold text-gray-600">{item.label}</p>
+                  <p className="text-xs font-semibold text-gray-600">{item.name}</p>
                   <div className="flex items-baseline justify-between mt-1">
                     <p className="text-2xl font-black text-gray-900">{item.val}</p>
                     <span className={`text-xs font-bold ${item.change.startsWith("+") ? "text-emerald-600 font-bold" : item.change.startsWith("-") ? "text-red-500" : "text-gray-500"}`}>
@@ -313,18 +332,51 @@ export default function UsersPage() {
               ))}
             </div>
 
-            {/* Filter Toolbar above Recharts Chart */}
+            {/* Filter Toolbar with Interactive Sumber Traffic Dropdown */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+              <div className="flex items-center gap-2 text-sm font-semibold text-gray-800 relative">
                 <span>{currentTab.chartTitle}</span>
                 <span className="text-xs text-gray-500 font-normal">menurut</span>
-                <span className="px-3 py-1 bg-sky-100 text-sky-900 font-semibold rounded-lg text-xs border border-sky-200">
-                  Sumber traffic ▾
-                </span>
+                
+                {/* INTERACTIVE DROPDOWN FOR SUMBER TRAFFIC / DIMENSION */}
+                <div className="relative">
+                  <button
+                    onClick={() => setDimensionOpen(!dimensionOpen)}
+                    className="px-3 py-1.5 bg-sky-100 hover:bg-sky-200 text-sky-900 font-semibold rounded-lg text-xs border border-sky-200 flex items-center gap-1.5 transition-colors"
+                  >
+                    {currentDimension.label} <ChevronDown className="size-3 text-sky-700" />
+                  </button>
+
+                  {dimensionOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-1 divide-y divide-gray-100 text-xs">
+                      {[
+                        { key: "sumber_traffic", label: "Sumber traffic", desc: "Cara pengguna menemukan listingan Play Store" },
+                        { key: "negara", label: "Negara/wilayah", desc: "Lokasi wilayah tempat pengguna/perangkat berada" },
+                        { key: "versi_app", label: "Versi aplikasi", desc: "Versi aplikasi Momsie di perangkat" },
+                        { key: "bahasa", label: "Bahasa", desc: "Setelan bahasa utama di perangkat" },
+                        { key: "versi_android", label: "Versi Android", desc: "Versi OS Android pada perangkat" },
+                      ].map(opt => (
+                        <button
+                          key={opt.key}
+                          onClick={() => {
+                            setSelectedDimension(opt.key)
+                            setDimensionOpen(false)
+                          }}
+                          className={`w-full text-left p-2 rounded-lg transition-colors ${selectedDimension === opt.key ? "bg-sky-50 text-sky-900 font-bold" : "hover:bg-gray-50 text-gray-700"}`}
+                        >
+                          <p className="font-semibold">{opt.label}</p>
+                          <p className="text-[10px] text-gray-500 mt-0.5">{opt.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 font-medium rounded-lg text-xs border border-emerald-200">
-                  ✓ 3 sumber traffic
+                  ✓ 3 pilihan aktif
                 </span>
               </div>
+
               <div className="flex items-center gap-3">
                 <button className="flex items-center gap-1 text-xs font-medium text-gray-600 bg-gray-50 border px-3 py-1.5 rounded-lg hover:bg-gray-100">
                   <Filter className="size-3.5" /> Tambahkan filter
@@ -402,7 +454,7 @@ export default function UsersPage() {
         </Card>
       </div>
 
-      {/* Filter Bar for User Table */}
+      {/* Filter Bar for User Table (Cleaned: "Semua Periode" without 253, side dropdown removed) */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-3">
@@ -416,38 +468,27 @@ export default function UsersPage() {
               />
             </div>
 
-            {/* Filter Periode */}
+            {/* Filter Periode Clean */}
             <select
               value={periodFilter}
               onChange={e => setPeriodFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+              className="px-4 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
             >
-              <option value="all">Semua Periode ({users.length} User)</option>
+              <option value="all">Semua Periode</option>
               <option value="28_hari">28 Hari Terakhir</option>
               <option value="90_hari">90 Hari Terakhir</option>
               <option value="juni">Juni 2026</option>
               <option value="juli">Juli 2026</option>
               <option value="agustus">Agustus 2026</option>
             </select>
-
-            {/* Filter Tipe User */}
-            <select
-              value={orderFilter}
-              onChange={e => setOrderFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border text-sm bg-white font-medium"
-            >
-              <option value="all">Semua Pengguna ({users.length})</option>
-              <option value="transacting">User Bertransaksi ({transactingCount})</option>
-              <option value="non_transacting">User Belum Transaksi ({nonTransactingCount})</option>
-            </select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Registered Users Table with Masked Initial Names (S*** R***) and Detail Kehamilan Button */}
+      {/* Registered Users Table with Independent Eye Unsensor Buttons */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Daftar Pengguna & Profil Kehamilan ({filtered.length})</CardTitle>
+          <CardTitle className="text-sm font-medium">Daftar Pengguna Aplikasi Terdaftar ({filtered.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -455,28 +496,46 @@ export default function UsersPage() {
               <thead>
                 <tr className="border-b text-muted-foreground bg-muted/30">
                   <th className="text-left py-3 px-3 font-medium">ID User</th>
-                  <th className="text-left py-3 px-3 font-medium">Nama (Sensored)</th>
+                  <th className="text-left py-3 px-3 font-medium">Nama Pengguna</th>
                   <th className="text-left py-3 px-3 font-medium">Usia & Kehamilan</th>
-                  <th className="text-left py-3 px-3 font-medium">Email / No. HP</th>
+                  <th className="text-left py-3 px-3 font-medium">Email</th>
+                  <th className="text-left py-3 px-3 font-medium">No. Telepon</th>
                   <th className="text-left py-3 px-3 font-medium">Domisili</th>
-                  <th className="text-left py-3 px-3 font-medium">Status Order</th>
-                  <th className="text-left py-3 px-3 font-medium">Total Spend</th>
-                  <th className="text-right py-3 px-3 font-medium">Detail</th>
+                  <th className="text-left py-3 px-3 font-medium">Tgl Registrasi</th>
+                  <th className="text-right py-3 px-3 font-medium">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(u => {
-                  const maskedName = maskInitialsName(u.name) // S*** R*** / A*** D***
-                  const handle = `@${u.name.toLowerCase().replace(/[^a-z]/g, "").substring(0, 1)}***`
+                  const isNameUnmasked = unmaskedMap[`${u.id}_name`]
+                  const isEmailUnmasked = unmaskedMap[`${u.id}_email`]
+                  const isPhoneUnmasked = unmaskedMap[`${u.id}_phone`]
+
+                  const displayName = isNameUnmasked ? u.name : maskInitialsName(u.name)
+                  const displayEmail = isEmailUnmasked ? u.email : maskEmail(u.email)
+                  const displayPhone = isPhoneUnmasked ? u.phone : maskPhone(u.phone)
+
                   const p = u.pregnancyProfile
 
                   return (
                     <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-3 font-mono text-xs font-bold text-gray-700">{u.id}</td>
+
+                      {/* Nama Pengguna with Eye Button */}
                       <td className="py-3 px-3">
-                        <p className="font-bold text-gray-900">{maskedName}</p>
-                        <p className="text-[11px] text-gray-400 font-mono">{handle}</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-gray-900">{displayName}</span>
+                          <button
+                            onClick={() => toggleUnmask(u.id, "name")}
+                            className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                            title={isNameUnmasked ? "Sembunyikan Nama" : "Tampilkan Nama Lengkap"}
+                          >
+                            {isNameUnmasked ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                          </button>
+                        </div>
                       </td>
+
+                      {/* Usia & Kehamilan */}
                       <td className="py-3 px-3">
                         <span className="text-xs font-semibold text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">
                           {p?.usiaRange || "26-30 tahun"}
@@ -485,27 +544,42 @@ export default function UsersPage() {
                           {p?.faseKehamilan || "Trimester 1"}
                         </p>
                       </td>
+
+                      {/* Email with Eye Button */}
                       <td className="py-3 px-3">
-                        <p className="font-mono text-xs text-gray-600">{maskEmail(u.email)}</p>
-                        <p className="font-mono text-[11px] text-gray-400">{maskPhone(u.phone)}</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs text-gray-700">{displayEmail}</span>
+                          <button
+                            onClick={() => toggleUnmask(u.id, "email")}
+                            className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                            title={isEmailUnmasked ? "Sembunyikan Email" : "Tampilkan Email Lengkap"}
+                          >
+                            {isEmailUnmasked ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                          </button>
+                        </div>
                       </td>
+
+                      {/* No HP with Eye Button */}
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs text-gray-700">{displayPhone}</span>
+                          <button
+                            onClick={() => toggleUnmask(u.id, "phone")}
+                            className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                            title={isPhoneUnmasked ? "Sembunyikan No HP" : "Tampilkan No HP Lengkap"}
+                          >
+                            {isPhoneUnmasked ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                          </button>
+                        </div>
+                      </td>
+
                       <td className="py-3 px-3 text-xs text-gray-700">{u.domisili}</td>
-                      <td className="py-3 px-3">
-                        {u.totalOrders > 0 ? (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-xs">
-                            {u.totalOrders} Order Selesai
-                          </Badge>
-                        ) : (
-                          <span className="text-xs text-gray-400 font-medium">0 Order (Registrasi Only)</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-xs font-semibold text-gray-900">
-                        {u.totalSpend > 0 ? formatRp(u.totalSpend) : "-"}
-                      </td>
+                      <td className="py-3 px-3 text-xs text-gray-600">{formatDate(u.registeredAt)}</td>
+
                       <td className="py-3 px-3 text-right">
                         <button
                           onClick={() => setSelectedUser(u)}
-                          className="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white font-medium text-xs rounded-lg transition-colors inline-flex items-center gap-1 shadow-xs"
+                          className="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white font-semibold text-xs rounded-lg transition-colors inline-flex items-center gap-1 shadow-xs"
                         >
                           <Eye className="size-3.5" /> Detail Kehamilan
                         </button>
@@ -526,22 +600,29 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* DETAIL PREGNANCY & SURVEY DATA MODAL */}
+      {/* CLEAN & EXPANDED PREGNANCY DETAIL MODAL (No Survey Blocks, Clean Spacious UI) */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" onClick={() => setSelectedUser(null)}>
-          <div className="relative max-w-2xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="relative max-w-xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b">
+            <div className="flex items-center justify-between pb-4 border-b">
               <div className="flex items-center gap-3">
-                <div className="size-11 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-extrabold text-base">
+                <div className="size-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-extrabold text-lg">
                   <HeartPulse className="size-6 text-pink-600" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-gray-900">{maskInitialsName(selectedUser.name)}</h2>
-                    <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">Akun Terverifikasi</Badge>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {unmaskedMap[`${selectedUser.id}_modal_name`] ? selectedUser.name : maskInitialsName(selectedUser.name)}
+                    </h2>
+                    <button
+                      onClick={() => toggleUnmask(selectedUser.id, "modal_name" as any)}
+                      className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                    >
+                      {unmaskedMap[`${selectedUser.id}_modal_name`] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
                   </div>
-                  <p className="text-xs text-muted-foreground font-mono">ID Pengguna: #{selectedUser.id} • Terdaftar {formatDate(selectedUser.registeredAt)}</p>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">ID Pengguna: #{selectedUser.id} • Registrasi {formatDate(selectedUser.registeredAt)}</p>
                 </div>
               </div>
               <button onClick={() => setSelectedUser(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
@@ -549,88 +630,77 @@ export default function UsersPage() {
               </button>
             </div>
 
-            {/* Modal Content: Pregnancy & Survey Answers */}
+            {/* Modal Content: Large & Prominent Pregnancy Metric Cards */}
             <div className="space-y-4">
-              {/* Profile KPI Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-pink-50/70 border border-pink-100">
-                  <p className="text-[11px] text-pink-700 font-bold uppercase mb-0.5">Usia Pengguna</p>
-                  <p className="font-bold text-gray-900 text-sm">{selectedUser.pregnancyProfile?.usiaRange || "26-30 tahun"}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-4 rounded-xl bg-pink-50/80 border border-pink-200">
+                  <p className="text-xs font-bold text-pink-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <UserCheck className="size-4 text-pink-600" /> Usia Pengguna
+                  </p>
+                  <p className="text-xl font-black text-gray-900">{selectedUser.pregnancyProfile?.usiaRange || "26-30 tahun"}</p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100">
-                  <p className="text-[11px] text-blue-700 font-bold uppercase mb-0.5">Fase Kehamilan</p>
-                  <p className="font-bold text-gray-900 text-sm">{selectedUser.pregnancyProfile?.faseKehamilan || "Trimester 1"}</p>
+                <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200">
+                  <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <HeartPulse className="size-4 text-blue-600" /> Fase Kehamilan
+                  </p>
+                  <p className="text-xl font-black text-gray-900">{selectedUser.pregnancyProfile?.faseKehamilan || "Trimester 1"}</p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-100">
-                  <p className="text-[11px] text-purple-700 font-bold uppercase mb-0.5">Hamil Pertama</p>
-                  <p className="font-bold text-gray-900 text-sm">{selectedUser.pregnancyProfile?.kehamilanPertama || "Ya"}</p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                  <p className="text-[11px] text-emerald-700 font-bold uppercase mb-0.5">Butuh Doula Care</p>
-                  <p className="font-bold text-gray-900 text-xs">{selectedUser.pregnancyProfile?.butuhPendampingan || "Sangat (5/5)"}</p>
-                </div>
-              </div>
-
-              {/* Contact & Location */}
-              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 space-y-1.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500 font-medium flex items-center gap-1"><MapPin className="size-3.5 text-pink-500" /> Domisili:</span>
-                  <span className="font-bold text-gray-900">{selectedUser.domisili}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500 font-medium">Email (Sensored):</span>
-                  <span className="font-mono font-bold text-gray-900">{maskEmail(selectedUser.email)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500 font-medium">No. Telepon (Sensored):</span>
-                  <span className="font-mono font-bold text-gray-900">{maskPhone(selectedUser.phone)}</span>
+                <div className="p-4 rounded-xl bg-purple-50/80 border border-purple-200">
+                  <p className="text-xs font-bold text-purple-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <Calendar className="size-4 text-purple-600" /> Hamil Pertama
+                  </p>
+                  <p className="text-xl font-black text-gray-900">{selectedUser.pregnancyProfile?.kehamilanPertama || "Ya"}</p>
                 </div>
               </div>
 
-              {/* Detailed Survey Responses Section */}
-              <div className="space-y-3 pt-1">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-pink-700 flex items-center gap-1.5">
-                  <Sparkles className="size-4 text-pink-500" /> Data Kebutuhan & Survei Kehamilan User
-                </h3>
+              {/* Large Prominent Contact & Location Cards with Independent Eye Toggles */}
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-3">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Informasi Kontak & Domisili</h3>
+                
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                  <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5"><MapPin className="size-4 text-pink-500" /> Domisili Operasional:</span>
+                  <span className="font-bold text-sm text-gray-900">{selectedUser.domisili}</span>
+                </div>
 
-                <div className="space-y-2 text-xs">
-                  <div className="p-3 rounded-xl bg-white border border-gray-200">
-                    <p className="font-bold text-gray-800 mb-1">🎯 Kebutuhan Utama Selama Masa Kehamilan:</p>
-                    <p className="text-gray-600 bg-gray-50 p-2 rounded-lg border">{selectedUser.pregnancyProfile?.kebutuhanUtama}</p>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                  <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5"><Mail className="size-4 text-blue-500" /> Email:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-sm text-gray-900">
+                      {unmaskedMap[`${selectedUser.id}_modal_email`] ? selectedUser.email : maskEmail(selectedUser.email)}
+                    </span>
+                    <button
+                      onClick={() => toggleUnmask(selectedUser.id, "modal_email" as any)}
+                      className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                    >
+                      {unmaskedMap[`${selectedUser.id}_modal_email`] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
                   </div>
+                </div>
 
-                  <div className="p-3 rounded-xl bg-white border border-gray-200">
-                    <p className="font-bold text-gray-800 mb-1">⭐ Fitur MOMSIE Yang Paling Dibutuhkan:</p>
-                    <p className="text-gray-600 bg-gray-50 p-2 rounded-lg border">{selectedUser.pregnancyProfile?.fiturFavorit}</p>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-white border border-gray-200">
-                    <p className="font-bold text-gray-800 mb-1">💡 Alasan Memilih & Membedakan MOMSIE:</p>
-                    <p className="text-gray-600 bg-gray-50 p-2 rounded-lg border">{selectedUser.pregnancyProfile?.alasanMomsie}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="p-3 rounded-xl bg-white border border-gray-200">
-                      <p className="font-bold text-gray-800 mb-0.5">Wajar Doula Chat:</p>
-                      <p className="font-bold text-pink-600">{selectedUser.pregnancyProfile?.estimasiHargaDoulaChat}</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-white border border-gray-200">
-                      <p className="font-bold text-gray-800 mb-0.5">Wajar Full Journey Doula:</p>
-                      <p className="font-bold text-pink-600">{selectedUser.pregnancyProfile?.estimasiHargaDoulaFull}</p>
-                    </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white border">
+                  <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5"><Phone className="size-4 text-emerald-500" /> No. Telepon:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-sm text-gray-900">
+                      {unmaskedMap[`${selectedUser.id}_modal_phone`] ? selectedUser.phone : maskPhone(selectedUser.phone)}
+                    </span>
+                    <button
+                      onClick={() => toggleUnmask(selectedUser.id, "modal_phone" as any)}
+                      className="p-1 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                    >
+                      {unmaskedMap[`${selectedUser.id}_modal_phone`] ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="pt-3 border-t flex justify-end">
+            <div className="pt-4 border-t flex justify-end">
               <button
                 onClick={() => setSelectedUser(null)}
-                className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-bold transition-colors"
+                className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-bold transition-colors"
               >
                 Tutup Detail
               </button>

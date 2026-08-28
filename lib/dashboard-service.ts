@@ -104,28 +104,33 @@ const parseTime = (val: any): number => {
   return isNaN(d.getTime()) ? 0 : d.getTime()
 }
 
-/** Generates exactly 119 seed transactions totaling Rp 17.409.500 gross with repeat order tracking */
-export function generate119SeedTransactions(): Transaction[] {
+/** Generates realistic, synchronized Momsie transactions for June, July, and August 2026 */
+export function generateMomsieTransactions(): Transaction[] {
   const femaleNames = [
     "Siti Rahmawati", "Anisa Putri", "Dewi Lestari", "Bunga Citra", "Nurul Aini",
-    "Rina Astuti", "Fitriani", "Dian Sastrowardoyo", "Maya Indah", "Ratna Juwita",
-    "Tari Melati", "Eka Yuliana", "Intan Permata", "Amanda Sari", "Ningrum Wulandari",
-    "Melati Sukma", "Nabila Maharani", "Rizky Amelia", "Utami Dewi", "Sri Handayani",
-    "Yulia Lestari", "Clarissa Anggraini", "Tari Rahayu", "Farida Nur", "Kusuma Wardani",
-    "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari", "Shinta Prameswari"
+    "Rina Astuti", "Fitriani Agustina", "Dian Sastrowardoyo", "Maya Indah Permata", "Ratna Juwita",
+    "Tari Melati", "Eka Yuliana", "Intan Permata Sari", "Amanda Putri", "Ningrum Wulandari",
+    "Melati Sukma Dewi", "Nabila Maharani", "Rizky Amelia", "Utami Sri Handayani", "Sri Handayani",
+    "Yulia Lestari", "Clarissa Anggraini", "Tari Rahayu", "Farida Nur Aini", "Kusuma Wardani",
+    "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari",
+    "Shinta Prameswari", "Kartika Sari", "Endang Sri Wahyuni", "Larasati Anggraeni", "Mega Kusuma Dewi",
+    "Novita Sari", "Pratiwi Rahmawati", "Retno Palupi", "Sari Asih", "Tiara Maharani",
+    "Widya Wulandari", "Yuni Shara"
   ]
 
   const paymentMethods = ["qris", "gopay", "shopeepay", "transfer_bca", "transfer_mandiri"]
-  const now = new Date()
   const list: Transaction[] = []
   let txCounter = 1001
 
-  const addTx = (
+  const addTxDate = (
+    year: number,
+    month: number, // 1-indexed (6 = June, 7 = July, 8 = August)
+    day: number,
     catKey: string,
     layananName: string,
     hargaLayanan: number,
     nameIndex: number,
-    daysAgo: number,
+    hour = 10,
     isSubscription = false,
     statusOverride?: string
   ) => {
@@ -133,7 +138,8 @@ export function generate119SeedTransactions(): Transaction[] {
     const nominal = hargaLayanan + adminFee
     const platformFee = isSubscription ? hargaLayanan : Math.round(hargaLayanan * 0.20)
     const doulaEarnings = isSubscription ? 0 : Math.round(hargaLayanan * 0.80)
-    const dateObj = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000 - (txCounter % 14) * 1800000)
+
+    const dateObj = new Date(year, month - 1, day, hour, (txCounter % 40) + 10)
 
     const txId = `TX-MSI-${txCounter++}`
     const userName = femaleNames[nameIndex % femaleNames.length]
@@ -148,7 +154,7 @@ export function generate119SeedTransactions(): Transaction[] {
       hargaLayanan: hargaLayanan,
       adminFee: adminFee,
       metodePembayaran: paymentMethods[txCounter % paymentMethods.length],
-      status: statusOverride || (txCounter % 14 === 0 ? "ongoing" : "completed"),
+      status: statusOverride || "completed",
       createdAt: dateObj.toISOString(),
       paidAt: dateObj.toISOString(),
       platformFee: platformFee,
@@ -157,42 +163,255 @@ export function generate119SeedTransactions(): Transaction[] {
     })
   }
 
-  // 1. 40 Doula Chat (Konsultasi Online via Chat @ Rp 30.000)
-  for (let i = 0; i < 40; i++) {
-    const daysAgo = Math.floor(i * 0.6)
-    addTx("doula_chat", "Konsultasi Online via Chat", 30000, i, daysAgo)
+  // Convenience helpers
+  const chat = (y: number, m: number, d: number, nameIdx: number, hour = 10) =>
+    addTxDate(y, m, d, "doula_chat", "Konsultasi Online via Chat", 30000, nameIdx, hour)
+
+  const yoga = (y: number, m: number, d: number, nameIdx: number, hour = 14) =>
+    addTxDate(y, m, d, "prenatal_yoga", "Kelas Online: Prenatal Yoga", 75000, nameIdx, hour)
+
+  const prenatal = (y: number, m: number, d: number, nameIdx: number, hour = 11) =>
+    addTxDate(y, m, d, "materi_online", "Kelas Online: Materi Prenatal", 99000, nameIdx, hour)
+
+  const bundling = (y: number, m: number, d: number, nameIdx: number, hour = 16) =>
+    addTxDate(y, m, d, "paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, nameIdx, hour)
+
+  const sub = (y: number, m: number, d: number, nameIdx: number, hour = 9) =>
+    addTxDate(y, m, d, "subscription", "Subscription Aplikasi Premium", 119000, nameIdx, hour, true)
+
+  const offline = (y: number, m: number, d: number, nameIdx: number, hour = 13, st?: string) =>
+    addTxDate(y, m, d, "doula_offline", "Full Journey Doula Care", 3000000, nameIdx, hour, false, st)
+
+  // ============================================================
+  // BULAN JUNI 2026 (38 TRX - Tahap Penetrasi Awal)
+  // ============================================================
+  // 5 Juni: 1x Doula Chat
+  chat(2026, 6, 5, 0, 9)
+  // 6 Juni: 1x Yoga
+  yoga(2026, 6, 6, 1, 14)
+  // 7 Juni: 1x Online Materi Prenatal
+  prenatal(2026, 6, 7, 2, 10)
+  // 8 Juni: 1x Doula Chat
+  chat(2026, 6, 8, 0, 11)
+  // 9 Juni: 0 TRX
+  // 10 Juni: 1x Doula Chat
+  chat(2026, 6, 10, 3, 13)
+  // 11 Juni: 1x Doula Chat
+  chat(2026, 6, 11, 4, 15)
+  // 12 Juni: 1x Yoga
+  yoga(2026, 6, 12, 1, 16)
+  // 13 Juni: 1x Yoga, 1x Online Materi Prenatal
+  yoga(2026, 6, 13, 0, 10)
+  prenatal(2026, 6, 13, 2, 15)
+  // 14 Juni: 1x Yoga, 1x Online Materi Prenatal
+  yoga(2026, 6, 14, 1, 11)
+  prenatal(2026, 6, 14, 5, 14)
+  // 15 Juni: 1x Doula Chat
+  chat(2026, 6, 15, 0, 10)
+  // 16 Juni: 1x Doula Chat
+  chat(2026, 6, 16, 3, 14)
+  // 17 Juni: 1x Paket Bundling
+  bundling(2026, 6, 17, 6, 16)
+  // 18 Juni: 1x Doula Chat
+  chat(2026, 6, 18, 4, 11)
+  // 19 Juni: 1x Doula Chat
+  chat(2026, 6, 19, 0, 15)
+  // 20 Juni: 1x Yoga, 1x Online Materi Prenatal
+  yoga(2026, 6, 20, 1, 10)
+  prenatal(2026, 6, 20, 2, 14)
+  // 21 Juni: 1x Yoga, 1x Online Materi Prenatal
+  yoga(2026, 6, 21, 0, 9)
+  prenatal(2026, 6, 21, 5, 13)
+  // 22 Juni: 1x Doula Chat
+  chat(2026, 6, 22, 3, 10)
+  // 23 Juni: 1x Doula Chat
+  chat(2026, 6, 23, 4, 11)
+  // 24 Juni: 1x Doula Chat
+  chat(2026, 6, 24, 0, 14)
+  // 25 Juni (Payday - 3 TRX): 1x Layanan Offline, 1x Subscription Aplikasi, 1x Doula Chat
+  offline(2026, 6, 25, 7, 10)
+  sub(2026, 6, 25, 8, 12)
+  chat(2026, 6, 25, 3, 15)
+  // 26 Juni (Payday - 3 TRX): 1x Subscription Aplikasi, 1x Doula Chat, 1x Yoga
+  sub(2026, 6, 26, 9, 9)
+  chat(2026, 6, 26, 4, 11)
+  yoga(2026, 6, 26, 1, 15)
+  // 27 Juni (Weekend Payday - 4 TRX): 2x Yoga, 1x Subscription Aplikasi, 1x Online Materi Prenatal
+  yoga(2026, 6, 27, 0, 10)
+  yoga(2026, 6, 27, 1, 14)
+  sub(2026, 6, 27, 10, 11)
+  prenatal(2026, 6, 27, 2, 16)
+  // 28 Juni (Weekend Payday - 3 TRX): 1x Yoga, 1x Subscription Aplikasi, 1x Online Materi Prenatal
+  yoga(2026, 6, 28, 0, 10)
+  sub(2026, 6, 28, 11, 13)
+  prenatal(2026, 6, 28, 5, 15)
+  // 29 Juni (Payday - 2 TRX): 1x Subscription Aplikasi, 1x Doula Chat
+  sub(2026, 6, 29, 12, 10)
+  chat(2026, 6, 29, 3, 14)
+  // 30 Juni (Payday - 2 TRX): 1x Subscription Aplikasi, 1x Doula Chat
+  sub(2026, 6, 30, 13, 11)
+  chat(2026, 6, 30, 4, 15)
+
+  // ============================================================
+  // BULAN JULI 2026 (88 TRX - Tahap Eksponensial / Growth)
+  // ============================================================
+  // 1 Juli (Payday - 5 TRX): 1x Layanan Offline, 2x Subscription Aplikasi, 1x Doula Chat, 1x Online Materi Prenatal
+  offline(2026, 7, 1, 14, 9)
+  sub(2026, 7, 1, 15, 11)
+  sub(2026, 7, 1, 16, 13)
+  chat(2026, 7, 1, 0, 15)
+  prenatal(2026, 7, 1, 2, 17)
+  // 2 Juli (Payday - 4 TRX): 2x Subscription Aplikasi, 2x Doula Chat
+  sub(2026, 7, 2, 17, 10)
+  sub(2026, 7, 2, 18, 12)
+  chat(2026, 7, 2, 3, 14)
+  chat(2026, 7, 2, 4, 16)
+  // 3 Juli (Payday - 4 TRX): 1x Subscription Aplikasi, 2x Doula Chat, 1x Yoga
+  sub(2026, 7, 3, 19, 9)
+  chat(2026, 7, 3, 0, 11)
+  chat(2026, 7, 3, 3, 14)
+  yoga(2026, 7, 3, 1, 16)
+  // 4 Juli (Weekend - 6 TRX): 3x Yoga, 2x Online Materi Prenatal, 1x Paket Bundling
+  yoga(2026, 7, 4, 0, 9)
+  yoga(2026, 7, 4, 1, 11)
+  yoga(2026, 7, 4, 5, 14)
+  prenatal(2026, 7, 4, 2, 10)
+  prenatal(2026, 7, 4, 6, 15)
+  bundling(2026, 7, 4, 7, 17)
+  // 5 Juli (Weekend - 6 TRX): 1x Layanan Offline, 3x Yoga, 1x Online Materi Prenatal, 1x Doula Chat
+  offline(2026, 7, 5, 20, 10)
+  yoga(2026, 7, 5, 0, 11)
+  yoga(2026, 7, 5, 1, 13)
+  yoga(2026, 7, 5, 5, 15)
+  prenatal(2026, 7, 5, 2, 14)
+  chat(2026, 7, 5, 3, 17)
+  // 6 Juli (3 TRX): 2x Doula Chat, 1x Yoga
+  chat(2026, 7, 6, 0, 10)
+  chat(2026, 7, 6, 4, 13)
+  yoga(2026, 7, 6, 1, 16)
+  // 7 Juli (3 TRX): 2x Doula Chat, 1x Online Materi Prenatal
+  chat(2026, 7, 7, 3, 11)
+  chat(2026, 7, 7, 4, 14)
+  prenatal(2026, 7, 7, 2, 16)
+  // 8 Juli (3 TRX): 2x Doula Chat, 1x Paket Bundling
+  chat(2026, 7, 8, 0, 10)
+  chat(2026, 7, 8, 3, 13)
+  bundling(2026, 7, 8, 6, 15)
+  // 9 Juli (3 TRX): 2x Doula Chat, 1x Online Materi Prenatal
+  chat(2026, 7, 9, 4, 11)
+  chat(2026, 7, 9, 0, 14)
+  prenatal(2026, 7, 9, 5, 16)
+  // 10 Juli (4 TRX): 2x Doula Chat, 2x Yoga
+  chat(2026, 7, 10, 3, 10)
+  chat(2026, 7, 10, 4, 12)
+  yoga(2026, 7, 10, 0, 14)
+  yoga(2026, 7, 10, 1, 16)
+  // 11 Juli (6 TRX): 3x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
+  yoga(2026, 7, 11, 0, 9)
+  yoga(2026, 7, 11, 1, 11)
+  yoga(2026, 7, 11, 5, 14)
+  prenatal(2026, 7, 11, 2, 10)
+  prenatal(2026, 7, 11, 6, 15)
+  chat(2026, 7, 11, 3, 16)
+  // 12 Juli (6 TRX): 3x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
+  yoga(2026, 7, 12, 0, 10)
+  yoga(2026, 7, 12, 1, 12)
+  yoga(2026, 7, 12, 5, 15)
+  prenatal(2026, 7, 12, 2, 11)
+  prenatal(2026, 7, 12, 6, 14)
+  chat(2026, 7, 12, 4, 16)
+  // 13 Juli (4 TRX): 3x Doula Chat, 1x Subscription Aplikasi
+  chat(2026, 7, 13, 0, 9)
+  chat(2026, 7, 13, 3, 11)
+  chat(2026, 7, 13, 4, 14)
+  sub(2026, 7, 13, 21, 16)
+  // 14 Juli (3 TRX): 2x Doula Chat, 1x Online Materi Prenatal
+  chat(2026, 7, 14, 0, 10)
+  chat(2026, 7, 14, 3, 13)
+  prenatal(2026, 7, 14, 2, 15)
+  // 15 Juli (4 TRX): 2x Doula Chat, 1x Yoga, 1x Online Materi Prenatal
+  chat(2026, 7, 15, 4, 10)
+  chat(2026, 7, 15, 0, 12)
+  yoga(2026, 7, 15, 1, 14)
+  prenatal(2026, 7, 15, 5, 16)
+  // 16 Juli (4 TRX): 2x Doula Chat, 1x Subscription Aplikasi, 1x Yoga
+  chat(2026, 7, 16, 3, 9)
+  chat(2026, 7, 16, 4, 11)
+  sub(2026, 7, 16, 22, 14)
+  yoga(2026, 7, 16, 0, 16)
+  // 17 Juli (4 TRX): 2x Doula Chat, 2x Yoga
+  chat(2026, 7, 17, 0, 10)
+  chat(2026, 7, 17, 3, 12)
+  yoga(2026, 7, 17, 1, 14)
+  yoga(2026, 7, 17, 5, 16)
+  // 18 Juli (7 TRX): 4x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
+  yoga(2026, 7, 18, 0, 9)
+  yoga(2026, 7, 18, 1, 11)
+  yoga(2026, 7, 18, 5, 13)
+  yoga(2026, 7, 18, 8, 15)
+  prenatal(2026, 7, 18, 2, 10)
+  prenatal(2026, 7, 18, 6, 14)
+  chat(2026, 7, 18, 4, 16)
+  // 19 Juli (7 TRX): 4x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
+  yoga(2026, 7, 19, 0, 9)
+  yoga(2026, 7, 19, 1, 11)
+  yoga(2026, 7, 19, 5, 13)
+  yoga(2026, 7, 19, 8, 15)
+  prenatal(2026, 7, 19, 2, 10)
+  prenatal(2026, 7, 19, 6, 14)
+  chat(2026, 7, 19, 3, 16)
+  // 20 Juli (5 TRX): 3x Doula Chat, 1x Online Materi Prenatal, 1x Yoga
+  chat(2026, 7, 20, 0, 9)
+  chat(2026, 7, 20, 3, 11)
+  chat(2026, 7, 20, 4, 14)
+  prenatal(2026, 7, 20, 2, 13)
+  yoga(2026, 7, 20, 1, 16)
+
+  // 21-31 Juli (Pertumbuhan Organik Akhir Juli)
+  chat(2026, 7, 21, 0, 10); yoga(2026, 7, 21, 1, 14); prenatal(2026, 7, 21, 2, 16)
+  chat(2026, 7, 22, 3, 11); bundling(2026, 7, 22, 6, 15); chat(2026, 7, 22, 4, 17)
+  chat(2026, 7, 23, 0, 10); yoga(2026, 7, 23, 1, 14); sub(2026, 7, 23, 23, 16)
+  chat(2026, 7, 24, 3, 10); yoga(2026, 7, 24, 0, 14); yoga(2026, 7, 24, 5, 16)
+  // 25-27 Juli Payday
+  offline(2026, 7, 25, 24, 10); sub(2026, 7, 25, 25, 12); chat(2026, 7, 25, 0, 14); yoga(2026, 7, 25, 1, 16)
+  sub(2026, 7, 26, 26, 9); yoga(2026, 7, 26, 0, 11); yoga(2026, 7, 26, 1, 14); prenatal(2026, 7, 26, 2, 16)
+  sub(2026, 7, 27, 27, 10); chat(2026, 7, 27, 3, 12); yoga(2026, 7, 27, 5, 15); bundling(2026, 7, 27, 7, 17)
+  chat(2026, 7, 28, 0, 10); yoga(2026, 7, 28, 1, 14); prenatal(2026, 7, 28, 2, 16)
+  chat(2026, 7, 29, 3, 11); yoga(2026, 7, 29, 0, 15)
+  chat(2026, 7, 30, 4, 10); sub(2026, 7, 30, 28, 13); yoga(2026, 7, 30, 1, 16)
+  chat(2026, 7, 31, 0, 9); yoga(2026, 7, 31, 5, 13); prenatal(2026, 7, 31, 2, 16)
+
+  // ============================================================
+  // BULAN AGUSTUS 2026 (Tahap Matured & Organic Growth, 1-27 Agustus 2026)
+  // ============================================================
+  for (let d = 1; d <= 27; d++) {
+    const dayOfWeek = new Date(2026, 7, d).getDay()
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+    const isPayday = d >= 25 && d <= 27
+
+    if (isPayday) {
+      if (d === 25) offline(2026, 8, d, 29, 10)
+      sub(2026, 8, d, 30 + (d % 5), 11)
+      chat(2026, 8, d, (d % 6), 9)
+      chat(2026, 8, d, (d + 2) % 6, 14)
+      yoga(2026, 8, d, (d % 4), 16)
+      prenatal(2026, 8, d, (d + 1) % 6, 17)
+    } else if (isWeekend) {
+      yoga(2026, 8, d, (d % 4), 9)
+      yoga(2026, 8, d, (d + 1) % 4, 11)
+      prenatal(2026, 8, d, (d % 6), 14)
+      prenatal(2026, 8, d, (d + 2) % 6, 16)
+      chat(2026, 8, d, (d % 5), 17)
+    } else {
+      chat(2026, 8, d, (d % 6), 10)
+      chat(2026, 8, d, (d + 1) % 6, 13)
+      yoga(2026, 8, d, (d % 4), 15)
+      if (d % 3 === 0) prenatal(2026, 8, d, (d % 5), 16)
+      if (d % 5 === 0) sub(2026, 8, d, 35 + (d % 5), 11)
+    }
   }
 
-  // 2. 21 Online Materi Prenatal (Kelas Online: Materi Prenatal @ Rp 99.000)
-  for (let i = 0; i < 21; i++) {
-    const daysAgo = Math.floor(i * 1.1)
-    addTx("materi_online", "Kelas Online: Materi Prenatal", 99000, i + 3, daysAgo)
-  }
-
-  // 3. 3 Layanan Offline (Full Journey Doula Care @ Rp 3.000.000)
-  addTx("doula_offline", "Full Journey Doula Care", 3000000, 2, 2, false, "completed")
-  addTx("doula_offline", "Full Journey Doula Care", 3000000, 7, 5, false, "ongoing")
-  addTx("doula_offline", "Full Journey Doula Care", 3000000, 14, 10, false, "completed")
-
-  // 4. 3 Paket Bundling (Kelas Online: Bundling Edukasi & Yoga @ Rp 135.000)
-  addTx("paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, 4, 3, false, "completed")
-  addTx("paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, 11, 7, false, "completed")
-  addTx("paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, 18, 12, false, "completed")
-
-  // 5. 40 Layanan Yoga (Kelas Online: Prenatal Yoga @ Rp 75.000, dengan repeat order)
-  for (let i = 0; i < 40; i++) {
-    const daysAgo = Math.floor(i * 0.7)
-    const nameIdx = i % 8
-    addTx("prenatal_yoga", "Kelas Online: Prenatal Yoga", 75000, nameIdx, daysAgo)
-  }
-
-  // 6. 12 Subscription (Subscription Aplikasi @ Rp 119.000)
-  for (let i = 0; i < 12; i++) {
-    const daysAgo = Math.floor(i * 2.0)
-    addTx("subscription", "Subscription Aplikasi Premium", 119000, i + 5, daysAgo, true, "completed")
-  }
-
-  // Calculate repeat order sequences
+  // Calculate user repeat order sequences chronologically
   const userTxMap: Record<string, number> = {}
   const chronological = [...list].sort((a, b) => parseTime(a.createdAt) - parseTime(b.createdAt))
   for (const tx of chronological) {
@@ -204,13 +423,14 @@ export function generate119SeedTransactions(): Transaction[] {
     tx.userOrderCount = userTxMap[tx.userId]
   }
 
+  // Sort newest first
   chronological.sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))
   return chronological
 }
 
-/** Fetches all transactions guaranteeing exactly 119 items and Rp 17.409.500 gross turnover */
-export async function fetchTransactions(limit = 119): Promise<Transaction[]> {
-  const list = generate119SeedTransactions()
+/** Fetches all transactions guaranteeing synchronized realistic growth schedule */
+export async function fetchTransactions(limit = 1000): Promise<Transaction[]> {
+  const list = generateMomsieTransactions()
   return list.slice(0, limit)
 }
 

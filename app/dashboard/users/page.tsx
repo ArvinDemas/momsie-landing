@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Activity, ChevronDown, Filter, Info, ArrowUpRight, HelpCircle } from "lucide-react"
-import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone, formatUserDisplayName } from "@/lib/dashboard-service"
+import { Loader2, Search, Activity, ChevronDown, Filter, ArrowUpRight, Eye, HeartPulse, User, Calendar, MapPin, CheckCircle, Shield, Sparkles, X, MessageSquare, DollarSign } from "lucide-react"
+import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone, maskInitialsName } from "@/lib/dashboard-service"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 // Daily time series data for Google Play Console curves (31 Jul - 27 Aug 2026)
@@ -80,6 +80,9 @@ export default function UsersPage() {
   const [search, setSearch] = useState("")
   const [orderFilter, setOrderFilter] = useState("all")
   const [periodFilter, setPeriodFilter] = useState("all")
+  
+  // Selected user for Pregnancy Detail Modal
+  const [selectedUser, setSelectedUser] = useState<RegisteredUser | null>(null)
 
   // Active Play Console Tab state
   const [activeTab, setActiveTab] = useState<"jangkauan" | "akuisisi" | "aktifkan" | "interaksi" | "pertahankan">("jangkauan")
@@ -240,7 +243,7 @@ export default function UsersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Kembangkan basis pengguna</h1>
           <p className="text-sm text-muted-foreground">
-            Performa Anda di Google Play Store & Manajemen Basis Pengguna Terdaftar Aplikasi Momsie.
+            Performa Anda di Google Play Store & Manajemen Profil Usia Kehamilan Pengguna Momsie.
           </p>
         </div>
       </div>
@@ -441,64 +444,78 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* Registered Users Table */}
+      {/* Registered Users Table with Masked Initial Names (S*** R***) and Detail Kehamilan Button */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Daftar Pengguna Aplikasi Terdaftar ({filtered.length})</CardTitle>
+          <CardTitle className="text-sm font-medium">Daftar Pengguna & Profil Kehamilan ({filtered.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-muted-foreground bg-muted/30">
-                  <th className="text-left py-3 px-2 font-medium">ID User</th>
-                  <th className="text-left py-3 px-2 font-medium">Nama Pengguna</th>
-                  <th className="text-left py-3 px-2 font-medium">Email (Sensored)</th>
-                  <th className="text-left py-3 px-2 font-medium">No. Telepon (Sensored)</th>
-                  <th className="text-left py-3 px-2 font-medium">Domisili</th>
-                  <th className="text-left py-3 px-2 font-medium">Tgl Registrasi</th>
-                  <th className="text-left py-3 px-2 font-medium">Status Transaksi</th>
-                  <th className="text-left py-3 px-2 font-medium">Total Spend</th>
-                  <th className="text-left py-3 px-2 font-medium">Status Akun</th>
+                  <th className="text-left py-3 px-3 font-medium">ID User</th>
+                  <th className="text-left py-3 px-3 font-medium">Nama (Sensored)</th>
+                  <th className="text-left py-3 px-3 font-medium">Usia & Kehamilan</th>
+                  <th className="text-left py-3 px-3 font-medium">Email / No. HP</th>
+                  <th className="text-left py-3 px-3 font-medium">Domisili</th>
+                  <th className="text-left py-3 px-3 font-medium">Status Order</th>
+                  <th className="text-left py-3 px-3 font-medium">Total Spend</th>
+                  <th className="text-right py-3 px-3 font-medium">Detail</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(u => {
-                  const handle = `@${u.name.toLowerCase().replace(/[^a-z]/g, "")}`
+                  const maskedName = maskInitialsName(u.name) // S*** R*** / A*** D***
+                  const handle = `@${u.name.toLowerCase().replace(/[^a-z]/g, "").substring(0, 1)}***`
+                  const p = u.pregnancyProfile
+
                   return (
                     <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-2 font-mono text-xs font-semibold text-gray-700">{u.id}</td>
-                      <td className="py-3 px-2">
-                        <p className="font-semibold text-gray-900">{formatUserDisplayName(u.name)}</p>
+                      <td className="py-3 px-3 font-mono text-xs font-bold text-gray-700">{u.id}</td>
+                      <td className="py-3 px-3">
+                        <p className="font-bold text-gray-900">{maskedName}</p>
                         <p className="text-[11px] text-gray-400 font-mono">{handle}</p>
                       </td>
-                      <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskEmail(u.email)}</td>
-                      <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskPhone(u.phone)}</td>
-                      <td className="py-3 px-2 text-xs text-gray-700">{u.domisili}</td>
-                      <td className="py-3 px-2 text-xs text-gray-600">{formatDate(u.registeredAt)}</td>
-                      <td className="py-3 px-2">
+                      <td className="py-3 px-3">
+                        <span className="text-xs font-semibold text-pink-700 bg-pink-50 px-2 py-0.5 rounded border border-pink-200">
+                          {p?.usiaRange || "26-30 tahun"}
+                        </span>
+                        <p className="text-[11px] text-gray-600 font-medium mt-0.5">
+                          {p?.faseKehamilan || "Trimester 1"}
+                        </p>
+                      </td>
+                      <td className="py-3 px-3">
+                        <p className="font-mono text-xs text-gray-600">{maskEmail(u.email)}</p>
+                        <p className="font-mono text-[11px] text-gray-400">{maskPhone(u.phone)}</p>
+                      </td>
+                      <td className="py-3 px-3 text-xs text-gray-700">{u.domisili}</td>
+                      <td className="py-3 px-3">
                         {u.totalOrders > 0 ? (
                           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-xs">
                             {u.totalOrders} Order Selesai
                           </Badge>
                         ) : (
-                          <span className="text-xs text-gray-400 font-medium">0 Order (Download Only)</span>
+                          <span className="text-xs text-gray-400 font-medium">0 Order (Registrasi Only)</span>
                         )}
                       </td>
-                      <td className="py-3 px-2 text-xs font-semibold text-gray-900">
+                      <td className="py-3 px-3 text-xs font-semibold text-gray-900">
                         {u.totalSpend > 0 ? formatRp(u.totalSpend) : "-"}
                       </td>
-                      <td className="py-3 px-2">
-                        <Badge className="bg-emerald-100 text-emerald-800 font-semibold text-xs border-emerald-200">
-                          AKTIF
-                        </Badge>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          onClick={() => setSelectedUser(u)}
+                          className="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white font-medium text-xs rounded-lg transition-colors inline-flex items-center gap-1 shadow-xs"
+                        >
+                          <Eye className="size-3.5" /> Detail Kehamilan
+                        </button>
                       </td>
                     </tr>
                   )
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="text-center py-12 text-muted-foreground">
+                    <td colSpan={8} className="text-center py-12 text-muted-foreground">
                       Tidak ada pengguna ditemukan untuk filter ini
                     </td>
                   </tr>
@@ -508,6 +525,119 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* DETAIL PREGNANCY & SURVEY DATA MODAL */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" onClick={() => setSelectedUser(null)}>
+          <div className="relative max-w-2xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b">
+              <div className="flex items-center gap-3">
+                <div className="size-11 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-extrabold text-base">
+                  <HeartPulse className="size-6 text-pink-600" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-gray-900">{maskInitialsName(selectedUser.name)}</h2>
+                    <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">Akun Terverifikasi</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono">ID Pengguna: #{selectedUser.id} • Terdaftar {formatDate(selectedUser.registeredAt)}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedUser(null)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {/* Modal Content: Pregnancy & Survey Answers */}
+            <div className="space-y-4">
+              {/* Profile KPI Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-pink-50/70 border border-pink-100">
+                  <p className="text-[11px] text-pink-700 font-bold uppercase mb-0.5">Usia Pengguna</p>
+                  <p className="font-bold text-gray-900 text-sm">{selectedUser.pregnancyProfile?.usiaRange || "26-30 tahun"}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100">
+                  <p className="text-[11px] text-blue-700 font-bold uppercase mb-0.5">Fase Kehamilan</p>
+                  <p className="font-bold text-gray-900 text-sm">{selectedUser.pregnancyProfile?.faseKehamilan || "Trimester 1"}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-purple-50/70 border border-purple-100">
+                  <p className="text-[11px] text-purple-700 font-bold uppercase mb-0.5">Hamil Pertama</p>
+                  <p className="font-bold text-gray-900 text-sm">{selectedUser.pregnancyProfile?.kehamilanPertama || "Ya"}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                  <p className="text-[11px] text-emerald-700 font-bold uppercase mb-0.5">Butuh Doula Care</p>
+                  <p className="font-bold text-gray-900 text-xs">{selectedUser.pregnancyProfile?.butuhPendampingan || "Sangat (5/5)"}</p>
+                </div>
+              </div>
+
+              {/* Contact & Location */}
+              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500 font-medium flex items-center gap-1"><MapPin className="size-3.5 text-pink-500" /> Domisili:</span>
+                  <span className="font-bold text-gray-900">{selectedUser.domisili}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500 font-medium">Email (Sensored):</span>
+                  <span className="font-mono font-bold text-gray-900">{maskEmail(selectedUser.email)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500 font-medium">No. Telepon (Sensored):</span>
+                  <span className="font-mono font-bold text-gray-900">{maskPhone(selectedUser.phone)}</span>
+                </div>
+              </div>
+
+              {/* Detailed Survey Responses Section */}
+              <div className="space-y-3 pt-1">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-pink-700 flex items-center gap-1.5">
+                  <Sparkles className="size-4 text-pink-500" /> Data Kebutuhan & Survei Kehamilan User
+                </h3>
+
+                <div className="space-y-2 text-xs">
+                  <div className="p-3 rounded-xl bg-white border border-gray-200">
+                    <p className="font-bold text-gray-800 mb-1">🎯 Kebutuhan Utama Selama Masa Kehamilan:</p>
+                    <p className="text-gray-600 bg-gray-50 p-2 rounded-lg border">{selectedUser.pregnancyProfile?.kebutuhanUtama}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white border border-gray-200">
+                    <p className="font-bold text-gray-800 mb-1">⭐ Fitur MOMSIE Yang Paling Dibutuhkan:</p>
+                    <p className="text-gray-600 bg-gray-50 p-2 rounded-lg border">{selectedUser.pregnancyProfile?.fiturFavorit}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white border border-gray-200">
+                    <p className="font-bold text-gray-800 mb-1">💡 Alasan Memilih & Membedakan MOMSIE:</p>
+                    <p className="text-gray-600 bg-gray-50 p-2 rounded-lg border">{selectedUser.pregnancyProfile?.alasanMomsie}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 rounded-xl bg-white border border-gray-200">
+                      <p className="font-bold text-gray-800 mb-0.5">Wajar Doula Chat:</p>
+                      <p className="font-bold text-pink-600">{selectedUser.pregnancyProfile?.estimasiHargaDoulaChat}</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white border border-gray-200">
+                      <p className="font-bold text-gray-800 mb-0.5">Wajar Full Journey Doula:</p>
+                      <p className="font-bold text-pink-600">{selectedUser.pregnancyProfile?.estimasiHargaDoulaFull}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-3 border-t flex justify-end">
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-bold transition-colors"
+              >
+                Tutup Detail
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

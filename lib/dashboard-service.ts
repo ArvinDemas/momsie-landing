@@ -748,6 +748,19 @@ function getCategoryLabel(catKey: string): string {
   return "Doula Service"
 }
 
+export interface PregnancyProfile {
+  usiaRange: string
+  faseKehamilan: string
+  kehamilanPertama: string
+  butuhPendampingan: string
+  kebutuhanUtama: string
+  fiturFavorit: string
+  sumberInformasi: string
+  alasanMomsie: string
+  estimasiHargaDoulaChat: string
+  estimasiHargaDoulaFull: string
+}
+
 export interface RegisteredUser {
   id: string
   name: string
@@ -758,6 +771,7 @@ export interface RegisteredUser {
   totalOrders: number
   totalSpend: number
   status: string
+  pregnancyProfile?: PregnancyProfile
 }
 
 export function generate253RegisteredUsers(transactions: Transaction[]): RegisteredUser[] {
@@ -798,6 +812,30 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
     "Solo, Jawa Tengah", "Klaten, Jawa Tengah", "Magelang, Jawa Tengah"
   ]
 
+  const usiaOptions = ["18-25 tahun", "26-30 tahun", "31-35 tahun", "36-40 tahun"]
+  const faseOptions = ["Trimester 1", "Trimester 2", "Trimester 3", "Pernah Hamil"]
+  const kehamilanPertamaOptions = ["Ya", "Tidak"]
+  const kebutuhanOptions = [
+    "Persiapan persalinan, Prenatal Yoga, Konsultasi Doula",
+    "Konsultasi terkait kehamilan, Pencatatan perkembangan kehamilan",
+    "Aktivitas fisik (Yoga kehamilan), Rekomendasi fasilitas kesehatan",
+    "Pendampingan emosional & Fisik selama kehamilan dan persalinan",
+    "Informasi & Edukasi Kehamilan, Rekomendasi Baby Shop"
+  ]
+  const fiturOptions = [
+    "Layanan Doula Care & Prenatal Yoga",
+    "Rekomendasi Rumah Sakit & Klinik Terdekat",
+    "Pregnancy Diary & Artikel Kehamilan",
+    "Paket Bundling Edukasi & Doula Chat",
+    "MOMSIE AI Chat Assistant & Hospital Bag Checklist"
+  ]
+  const alasanOptions = [
+    "Kombinasi layanan profesional Doula & fitur digital terpadu",
+    "Pendampingan personal yang nyaman dan fleksibel dari rumah",
+    "Akses mudah ke tenaga pendamping terpercaya di wilayah DIY",
+    "Laporan kehamilan komprehensif dan kelas online terjangkau"
+  ]
+
   const users: RegisteredUser[] = []
   const startDate = new Date(2026, 4, 1)
   const endDate = new Date(2026, 7, 27)
@@ -818,6 +856,19 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
     // Only the first 78 users (USR-100 to USR-177) have transacted
     const stats = i < 78 ? (userStatsMap[userId] || { count: 0, spend: 0 }) : { count: 0, spend: 0 }
 
+    const profile: PregnancyProfile = {
+      usiaRange: usiaOptions[i % usiaOptions.length],
+      faseKehamilan: i < 78 ? (i % 2 === 0 ? "Trimester 1" : i % 3 === 0 ? "Trimester 2" : "Trimester 3") : faseOptions[i % faseOptions.length],
+      kehamilanPertama: kehamilanPertamaOptions[i % kehamilanPertamaOptions.length],
+      butuhPendampingan: i % 2 === 0 ? "Sangat Membutuhkan (Skor 5/5)" : "Membutuhkan (Skor 4/5)",
+      kebutuhanUtama: kebutuhanOptions[i % kebutuhanOptions.length],
+      fiturFavorit: fiturOptions[i % fiturOptions.length],
+      sumberInformasi: "Dokter/Bidan, Rumah Sakit, Komunitas Ibu Hamil",
+      alasanMomsie: alasanOptions[i % alasanOptions.length],
+      estimasiHargaDoulaChat: "Rp25.000-Rp35.000",
+      estimasiHargaDoulaFull: "Rp2.000.000-Rp3.000.000",
+    }
+
     users.push({
       id: userId,
       name: name,
@@ -828,10 +879,21 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
       totalOrders: stats.count,
       totalSpend: stats.spend,
       status: "Aktif",
+      pregnancyProfile: profile,
     })
   }
 
   return users
+}
+
+/** Masks name to initials format e.g. "Arvin Demas" -> "A*** D***" or "Siti Rahmawati" -> "S*** R***" */
+export function maskInitialsName(name: string): string {
+  if (!name) return name
+  const parts = name.trim().split(/\s+/)
+  return parts.map(p => {
+    if (p.length <= 1) return `${p[0]}***`
+    return `${p[0]}${"*".repeat(Math.min(p.length - 1, 3))}`
+  }).join(" ")
 }
 
 export function formatUserDisplayName(name: string): string {

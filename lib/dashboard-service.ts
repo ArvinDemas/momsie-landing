@@ -115,7 +115,11 @@ export function generateMomsieTransactions(): Transaction[] {
     "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari",
     "Shinta Prameswari", "Kartika Sari", "Endang Sri Wahyuni", "Larasati Anggraeni", "Mega Kusuma Dewi",
     "Novita Sari", "Pratiwi Rahmawati", "Retno Palupi", "Sari Asih", "Tiara Maharani",
-    "Widya Wulandari", "Yuni Shara"
+    "Widya Wulandari", "Yuni Shara", "Zulaikha Rahma", "Ayu Tingting", "Cinta Laura",
+    "Desy Ratnasari", "Erlina Febriani", "Febby Rastanty", "Gita Gutawa", "Hesti Purwadinata",
+    "Indah Permatasari", "Juwita Bahar", "Kiki Amalia", "Luna Maya", "Maudy Ayunda",
+    "Nia Ramadhani", "Olla Ramlan", "Paula Verhoeven", "Raisa Andriana", "Syahrini",
+    "Titi Kamal", "Ussy Sulistiawaty", "Vina Panduwinata", "Wulan Guritno", "Yuni Shara"
   ]
 
   const paymentMethods = ["qris", "gopay", "shopeepay", "transfer_bca", "transfer_mandiri"]
@@ -142,11 +146,12 @@ export function generateMomsieTransactions(): Transaction[] {
     const dateObj = new Date(year, month - 1, day, hour, (txCounter % 40) + 10)
 
     const txId = `TX-MSI-${txCounter++}`
-    const userName = femaleNames[nameIndex % femaleNames.length]
+    const userIdx = nameIndex % femaleNames.length
+    const userName = femaleNames[userIdx]
 
     list.push({
       id: txId,
-      userId: `USR-${100 + (nameIndex % femaleNames.length)}`,
+      userId: `USR-${100 + userIdx}`,
       namaUser: userName,
       jenisLayanan: catKey,
       deskripsi: layananName,
@@ -163,223 +168,95 @@ export function generateMomsieTransactions(): Transaction[] {
     })
   }
 
+  let namePointer = 0
+  const nextUser = () => namePointer++
+
   // Convenience helpers
-  const chat = (y: number, m: number, d: number, nameIdx: number, hour = 10) =>
-    addTxDate(y, m, d, "doula_chat", "Konsultasi Online via Chat", 30000, nameIdx, hour)
+  const chat = (y: number, m: number, d: number, hour = 10) =>
+    addTxDate(y, m, d, "doula_chat", "Konsultasi Online via Chat", 30000, nextUser(), hour)
 
-  const yoga = (y: number, m: number, d: number, nameIdx: number, hour = 14) =>
-    addTxDate(y, m, d, "prenatal_yoga", "Kelas Online: Prenatal Yoga", 75000, nameIdx, hour)
+  const yoga = (y: number, m: number, d: number, hour = 14) =>
+    addTxDate(y, m, d, "prenatal_yoga", "Kelas Online: Prenatal Yoga", 75000, nextUser(), hour)
 
-  const prenatal = (y: number, m: number, d: number, nameIdx: number, hour = 11) =>
-    addTxDate(y, m, d, "materi_online", "Kelas Online: Materi Prenatal", 99000, nameIdx, hour)
+  const prenatal = (y: number, m: number, d: number, hour = 11) =>
+    addTxDate(y, m, d, "materi_online", "Kelas Online: Materi Prenatal", 99000, nextUser(), hour)
 
-  const bundling = (y: number, m: number, d: number, nameIdx: number, hour = 16) =>
-    addTxDate(y, m, d, "paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, nameIdx, hour)
+  const bundling = (y: number, m: number, d: number, hour = 16) =>
+    addTxDate(y, m, d, "paket_bundling", "Kelas Online: Bundling Edukasi & Yoga", 135000, nextUser(), hour)
 
-  const sub = (y: number, m: number, d: number, nameIdx: number, hour = 9) =>
-    addTxDate(y, m, d, "subscription", "Subscription Aplikasi Premium", 119000, nameIdx, hour, true)
+  const sub = (y: number, m: number, d: number, hour = 9) =>
+    addTxDate(y, m, d, "subscription", "Subscription Aplikasi Premium", 119000, nextUser(), hour, true)
 
-  const offline = (y: number, m: number, d: number, nameIdx: number, hour = 13, st?: string) =>
-    addTxDate(y, m, d, "doula_offline", "Full Journey Doula Care", 3000000, nameIdx, hour, false, st)
+  const offline = (y: number, m: number, d: number, hour = 13, st?: string) =>
+    addTxDate(y, m, d, "doula_offline", "Full Journey Doula Care", 3000000, nextUser(), hour, false, st)
 
   // ============================================================
   // BULAN JUNI 2026 (38 TRX - Tahap Penetrasi Awal)
   // ============================================================
-  // 5 Juni: 1x Doula Chat
-  chat(2026, 6, 5, 0, 9)
-  // 6 Juni: 1x Yoga
-  yoga(2026, 6, 6, 1, 14)
-  // 7 Juni: 1x Online Materi Prenatal
-  prenatal(2026, 6, 7, 2, 10)
-  // 8 Juni: 1x Doula Chat
-  chat(2026, 6, 8, 0, 11)
+  chat(2026, 6, 5, 9)
+  yoga(2026, 6, 6, 14)
+  prenatal(2026, 6, 7, 10)
+  chat(2026, 6, 8, 11)
   // 9 Juni: 0 TRX
-  // 10 Juni: 1x Doula Chat
-  chat(2026, 6, 10, 3, 13)
-  // 11 Juni: 1x Doula Chat
-  chat(2026, 6, 11, 4, 15)
-  // 12 Juni: 1x Yoga
-  yoga(2026, 6, 12, 1, 16)
-  // 13 Juni: 1x Yoga, 1x Online Materi Prenatal
-  yoga(2026, 6, 13, 0, 10)
-  prenatal(2026, 6, 13, 2, 15)
-  // 14 Juni: 1x Yoga, 1x Online Materi Prenatal
-  yoga(2026, 6, 14, 1, 11)
-  prenatal(2026, 6, 14, 5, 14)
-  // 15 Juni: 1x Doula Chat
-  chat(2026, 6, 15, 0, 10)
-  // 16 Juni: 1x Doula Chat
-  chat(2026, 6, 16, 3, 14)
-  // 17 Juni: 1x Paket Bundling
-  bundling(2026, 6, 17, 6, 16)
-  // 18 Juni: 1x Doula Chat
-  chat(2026, 6, 18, 4, 11)
-  // 19 Juni: 1x Doula Chat
-  chat(2026, 6, 19, 0, 15)
-  // 20 Juni: 1x Yoga, 1x Online Materi Prenatal
-  yoga(2026, 6, 20, 1, 10)
-  prenatal(2026, 6, 20, 2, 14)
-  // 21 Juni: 1x Yoga, 1x Online Materi Prenatal
-  yoga(2026, 6, 21, 0, 9)
-  prenatal(2026, 6, 21, 5, 13)
-  // 22 Juni: 1x Doula Chat
-  chat(2026, 6, 22, 3, 10)
-  // 23 Juni: 1x Doula Chat
-  chat(2026, 6, 23, 4, 11)
-  // 24 Juni: 1x Doula Chat
-  chat(2026, 6, 24, 0, 14)
-  // 25 Juni (Payday - 3 TRX): 1x Layanan Offline, 1x Subscription Aplikasi, 1x Doula Chat
-  offline(2026, 6, 25, 7, 10)
-  sub(2026, 6, 25, 8, 12)
-  chat(2026, 6, 25, 3, 15)
-  // 26 Juni (Payday - 3 TRX): 1x Subscription Aplikasi, 1x Doula Chat, 1x Yoga
-  sub(2026, 6, 26, 9, 9)
-  chat(2026, 6, 26, 4, 11)
-  yoga(2026, 6, 26, 1, 15)
-  // 27 Juni (Weekend Payday - 4 TRX): 2x Yoga, 1x Subscription Aplikasi, 1x Online Materi Prenatal
-  yoga(2026, 6, 27, 0, 10)
-  yoga(2026, 6, 27, 1, 14)
-  sub(2026, 6, 27, 10, 11)
-  prenatal(2026, 6, 27, 2, 16)
-  // 28 Juni (Weekend Payday - 3 TRX): 1x Yoga, 1x Subscription Aplikasi, 1x Online Materi Prenatal
-  yoga(2026, 6, 28, 0, 10)
-  sub(2026, 6, 28, 11, 13)
-  prenatal(2026, 6, 28, 5, 15)
-  // 29 Juni (Payday - 2 TRX): 1x Subscription Aplikasi, 1x Doula Chat
-  sub(2026, 6, 29, 12, 10)
-  chat(2026, 6, 29, 3, 14)
-  // 30 Juni (Payday - 2 TRX): 1x Subscription Aplikasi, 1x Doula Chat
-  sub(2026, 6, 30, 13, 11)
-  chat(2026, 6, 30, 4, 15)
+  chat(2026, 6, 10, 13)
+  chat(2026, 6, 11, 15)
+  yoga(2026, 6, 12, 16)
+  yoga(2026, 6, 13, 10); prenatal(2026, 6, 13, 15)
+  yoga(2026, 6, 14, 11); prenatal(2026, 6, 14, 14)
+  chat(2026, 6, 15, 10)
+  chat(2026, 6, 16, 14)
+  bundling(2026, 6, 17, 16)
+  chat(2026, 6, 18, 11)
+  chat(2026, 6, 19, 15)
+  yoga(2026, 6, 20, 10); prenatal(2026, 6, 20, 14)
+  yoga(2026, 6, 21, 9); prenatal(2026, 6, 21, 13)
+  chat(2026, 6, 22, 10)
+  chat(2026, 6, 23, 11)
+  chat(2026, 6, 24, 14)
+  // Payday Juni
+  offline(2026, 6, 25, 10); sub(2026, 6, 25, 12); chat(2026, 6, 25, 15)
+  sub(2026, 6, 26, 9); chat(2026, 6, 26, 11); yoga(2026, 6, 26, 15)
+  yoga(2026, 6, 27, 10); yoga(2026, 6, 27, 14); sub(2026, 6, 27, 11); prenatal(2026, 6, 27, 16)
+  yoga(2026, 6, 28, 10); sub(2026, 6, 28, 13); prenatal(2026, 6, 28, 15)
+  sub(2026, 6, 29, 10); chat(2026, 6, 29, 14)
+  sub(2026, 6, 30, 11); chat(2026, 6, 30, 15)
 
   // ============================================================
   // BULAN JULI 2026 (88 TRX - Tahap Eksponensial / Growth)
   // ============================================================
-  // 1 Juli (Payday - 5 TRX): 1x Layanan Offline, 2x Subscription Aplikasi, 1x Doula Chat, 1x Online Materi Prenatal
-  offline(2026, 7, 1, 14, 9)
-  sub(2026, 7, 1, 15, 11)
-  sub(2026, 7, 1, 16, 13)
-  chat(2026, 7, 1, 0, 15)
-  prenatal(2026, 7, 1, 2, 17)
-  // 2 Juli (Payday - 4 TRX): 2x Subscription Aplikasi, 2x Doula Chat
-  sub(2026, 7, 2, 17, 10)
-  sub(2026, 7, 2, 18, 12)
-  chat(2026, 7, 2, 3, 14)
-  chat(2026, 7, 2, 4, 16)
-  // 3 Juli (Payday - 4 TRX): 1x Subscription Aplikasi, 2x Doula Chat, 1x Yoga
-  sub(2026, 7, 3, 19, 9)
-  chat(2026, 7, 3, 0, 11)
-  chat(2026, 7, 3, 3, 14)
-  yoga(2026, 7, 3, 1, 16)
-  // 4 Juli (Weekend - 6 TRX): 3x Yoga, 2x Online Materi Prenatal, 1x Paket Bundling
-  yoga(2026, 7, 4, 0, 9)
-  yoga(2026, 7, 4, 1, 11)
-  yoga(2026, 7, 4, 5, 14)
-  prenatal(2026, 7, 4, 2, 10)
-  prenatal(2026, 7, 4, 6, 15)
-  bundling(2026, 7, 4, 7, 17)
-  // 5 Juli (Weekend - 6 TRX): 1x Layanan Offline, 3x Yoga, 1x Online Materi Prenatal, 1x Doula Chat
-  offline(2026, 7, 5, 20, 10)
-  yoga(2026, 7, 5, 0, 11)
-  yoga(2026, 7, 5, 1, 13)
-  yoga(2026, 7, 5, 5, 15)
-  prenatal(2026, 7, 5, 2, 14)
-  chat(2026, 7, 5, 3, 17)
-  // 6 Juli (3 TRX): 2x Doula Chat, 1x Yoga
-  chat(2026, 7, 6, 0, 10)
-  chat(2026, 7, 6, 4, 13)
-  yoga(2026, 7, 6, 1, 16)
-  // 7 Juli (3 TRX): 2x Doula Chat, 1x Online Materi Prenatal
-  chat(2026, 7, 7, 3, 11)
-  chat(2026, 7, 7, 4, 14)
-  prenatal(2026, 7, 7, 2, 16)
-  // 8 Juli (3 TRX): 2x Doula Chat, 1x Paket Bundling
-  chat(2026, 7, 8, 0, 10)
-  chat(2026, 7, 8, 3, 13)
-  bundling(2026, 7, 8, 6, 15)
-  // 9 Juli (3 TRX): 2x Doula Chat, 1x Online Materi Prenatal
-  chat(2026, 7, 9, 4, 11)
-  chat(2026, 7, 9, 0, 14)
-  prenatal(2026, 7, 9, 5, 16)
-  // 10 Juli (4 TRX): 2x Doula Chat, 2x Yoga
-  chat(2026, 7, 10, 3, 10)
-  chat(2026, 7, 10, 4, 12)
-  yoga(2026, 7, 10, 0, 14)
-  yoga(2026, 7, 10, 1, 16)
-  // 11 Juli (6 TRX): 3x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
-  yoga(2026, 7, 11, 0, 9)
-  yoga(2026, 7, 11, 1, 11)
-  yoga(2026, 7, 11, 5, 14)
-  prenatal(2026, 7, 11, 2, 10)
-  prenatal(2026, 7, 11, 6, 15)
-  chat(2026, 7, 11, 3, 16)
-  // 12 Juli (6 TRX): 3x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
-  yoga(2026, 7, 12, 0, 10)
-  yoga(2026, 7, 12, 1, 12)
-  yoga(2026, 7, 12, 5, 15)
-  prenatal(2026, 7, 12, 2, 11)
-  prenatal(2026, 7, 12, 6, 14)
-  chat(2026, 7, 12, 4, 16)
-  // 13 Juli (4 TRX): 3x Doula Chat, 1x Subscription Aplikasi
-  chat(2026, 7, 13, 0, 9)
-  chat(2026, 7, 13, 3, 11)
-  chat(2026, 7, 13, 4, 14)
-  sub(2026, 7, 13, 21, 16)
-  // 14 Juli (3 TRX): 2x Doula Chat, 1x Online Materi Prenatal
-  chat(2026, 7, 14, 0, 10)
-  chat(2026, 7, 14, 3, 13)
-  prenatal(2026, 7, 14, 2, 15)
-  // 15 Juli (4 TRX): 2x Doula Chat, 1x Yoga, 1x Online Materi Prenatal
-  chat(2026, 7, 15, 4, 10)
-  chat(2026, 7, 15, 0, 12)
-  yoga(2026, 7, 15, 1, 14)
-  prenatal(2026, 7, 15, 5, 16)
-  // 16 Juli (4 TRX): 2x Doula Chat, 1x Subscription Aplikasi, 1x Yoga
-  chat(2026, 7, 16, 3, 9)
-  chat(2026, 7, 16, 4, 11)
-  sub(2026, 7, 16, 22, 14)
-  yoga(2026, 7, 16, 0, 16)
-  // 17 Juli (4 TRX): 2x Doula Chat, 2x Yoga
-  chat(2026, 7, 17, 0, 10)
-  chat(2026, 7, 17, 3, 12)
-  yoga(2026, 7, 17, 1, 14)
-  yoga(2026, 7, 17, 5, 16)
-  // 18 Juli (7 TRX): 4x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
-  yoga(2026, 7, 18, 0, 9)
-  yoga(2026, 7, 18, 1, 11)
-  yoga(2026, 7, 18, 5, 13)
-  yoga(2026, 7, 18, 8, 15)
-  prenatal(2026, 7, 18, 2, 10)
-  prenatal(2026, 7, 18, 6, 14)
-  chat(2026, 7, 18, 4, 16)
-  // 19 Juli (7 TRX): 4x Yoga, 2x Online Materi Prenatal, 1x Doula Chat
-  yoga(2026, 7, 19, 0, 9)
-  yoga(2026, 7, 19, 1, 11)
-  yoga(2026, 7, 19, 5, 13)
-  yoga(2026, 7, 19, 8, 15)
-  prenatal(2026, 7, 19, 2, 10)
-  prenatal(2026, 7, 19, 6, 14)
-  chat(2026, 7, 19, 3, 16)
-  // 20 Juli (5 TRX): 3x Doula Chat, 1x Online Materi Prenatal, 1x Yoga
-  chat(2026, 7, 20, 0, 9)
-  chat(2026, 7, 20, 3, 11)
-  chat(2026, 7, 20, 4, 14)
-  prenatal(2026, 7, 20, 2, 13)
-  yoga(2026, 7, 20, 1, 16)
+  offline(2026, 7, 1, 9); sub(2026, 7, 1, 11); sub(2026, 7, 1, 13); chat(2026, 7, 1, 15); prenatal(2026, 7, 1, 17)
+  sub(2026, 7, 2, 10); sub(2026, 7, 2, 12); chat(2026, 7, 2, 14); chat(2026, 7, 2, 16)
+  sub(2026, 7, 3, 9); chat(2026, 7, 3, 11); chat(2026, 7, 3, 14); yoga(2026, 7, 3, 16)
+  yoga(2026, 7, 4, 9); yoga(2026, 7, 4, 11); yoga(2026, 7, 4, 14); prenatal(2026, 7, 4, 10); prenatal(2026, 7, 4, 15); bundling(2026, 7, 4, 17)
+  offline(2026, 7, 5, 10); yoga(2026, 7, 5, 11); yoga(2026, 7, 5, 13); yoga(2026, 7, 5, 15); prenatal(2026, 7, 5, 14); chat(2026, 7, 5, 17)
+  chat(2026, 7, 6, 10); chat(2026, 7, 6, 13); yoga(2026, 7, 6, 16)
+  chat(2026, 7, 7, 11); chat(2026, 7, 7, 14); prenatal(2026, 7, 7, 16)
+  chat(2026, 7, 8, 10); chat(2026, 7, 8, 13); bundling(2026, 7, 8, 15)
+  chat(2026, 7, 9, 11); chat(2026, 7, 9, 14); prenatal(2026, 7, 9, 16)
+  chat(2026, 7, 10, 10); chat(2026, 7, 10, 12); yoga(2026, 7, 10, 14); yoga(2026, 7, 10, 16)
+  yoga(2026, 7, 11, 9); yoga(2026, 7, 11, 11); yoga(2026, 7, 11, 14); prenatal(2026, 7, 11, 10); prenatal(2026, 7, 11, 15); chat(2026, 7, 11, 16)
+  yoga(2026, 7, 12, 10); yoga(2026, 7, 12, 12); yoga(2026, 7, 12, 15); prenatal(2026, 7, 12, 11); prenatal(2026, 7, 12, 14); chat(2026, 7, 12, 16)
+  chat(2026, 7, 13, 9); chat(2026, 7, 13, 11); chat(2026, 7, 13, 14); sub(2026, 7, 13, 16)
+  chat(2026, 7, 14, 10); chat(2026, 7, 14, 13); prenatal(2026, 7, 14, 15)
+  chat(2026, 7, 15, 10); chat(2026, 7, 15, 12); yoga(2026, 7, 15, 14); prenatal(2026, 7, 15, 16)
+  chat(2026, 7, 16, 9); chat(2026, 7, 16, 11); sub(2026, 7, 16, 14); yoga(2026, 7, 16, 16)
+  chat(2026, 7, 17, 10); chat(2026, 7, 17, 12); yoga(2026, 7, 17, 14); yoga(2026, 7, 17, 16)
+  yoga(2026, 7, 18, 9); yoga(2026, 7, 18, 11); yoga(2026, 7, 18, 13); yoga(2026, 7, 18, 15); prenatal(2026, 7, 18, 10); prenatal(2026, 7, 18, 14); chat(2026, 7, 18, 16)
+  yoga(2026, 7, 19, 9); yoga(2026, 7, 19, 11); yoga(2026, 7, 19, 13); yoga(2026, 7, 19, 15); prenatal(2026, 7, 19, 10); prenatal(2026, 7, 19, 14); chat(2026, 7, 19, 16)
+  chat(2026, 7, 20, 9); chat(2026, 7, 20, 11); chat(2026, 7, 20, 14); prenatal(2026, 7, 20, 13); yoga(2026, 7, 20, 16)
 
   // 21-31 Juli (Pertumbuhan Organik Akhir Juli)
-  chat(2026, 7, 21, 0, 10); yoga(2026, 7, 21, 1, 14); prenatal(2026, 7, 21, 2, 16)
-  chat(2026, 7, 22, 3, 11); bundling(2026, 7, 22, 6, 15); chat(2026, 7, 22, 4, 17)
-  chat(2026, 7, 23, 0, 10); yoga(2026, 7, 23, 1, 14); sub(2026, 7, 23, 23, 16)
-  chat(2026, 7, 24, 3, 10); yoga(2026, 7, 24, 0, 14); yoga(2026, 7, 24, 5, 16)
-  // 25-27 Juli Payday
-  offline(2026, 7, 25, 24, 10); sub(2026, 7, 25, 25, 12); chat(2026, 7, 25, 0, 14); yoga(2026, 7, 25, 1, 16)
-  sub(2026, 7, 26, 26, 9); yoga(2026, 7, 26, 0, 11); yoga(2026, 7, 26, 1, 14); prenatal(2026, 7, 26, 2, 16)
-  sub(2026, 7, 27, 27, 10); chat(2026, 7, 27, 3, 12); yoga(2026, 7, 27, 5, 15); bundling(2026, 7, 27, 7, 17)
-  chat(2026, 7, 28, 0, 10); yoga(2026, 7, 28, 1, 14); prenatal(2026, 7, 28, 2, 16)
-  chat(2026, 7, 29, 3, 11); yoga(2026, 7, 29, 0, 15)
-  chat(2026, 7, 30, 4, 10); sub(2026, 7, 30, 28, 13); yoga(2026, 7, 30, 1, 16)
-  chat(2026, 7, 31, 0, 9); yoga(2026, 7, 31, 5, 13); prenatal(2026, 7, 31, 2, 16)
+  chat(2026, 7, 21, 10); yoga(2026, 7, 21, 14); prenatal(2026, 7, 21, 16)
+  chat(2026, 7, 22, 11); bundling(2026, 7, 22, 15); chat(2026, 7, 22, 17)
+  chat(2026, 7, 23, 10); yoga(2026, 7, 23, 14); sub(2026, 7, 23, 16)
+  chat(2026, 7, 24, 10); yoga(2026, 7, 24, 14); yoga(2026, 7, 24, 16)
+  offline(2026, 7, 25, 10); sub(2026, 7, 25, 12); chat(2026, 7, 25, 14); yoga(2026, 7, 25, 16)
+  sub(2026, 7, 26, 9); yoga(2026, 7, 26, 11); yoga(2026, 7, 26, 14); prenatal(2026, 7, 26, 16)
+  sub(2026, 7, 27, 10); chat(2026, 7, 27, 12); yoga(2026, 7, 27, 15); bundling(2026, 7, 27, 17)
+  chat(2026, 7, 28, 10); yoga(2026, 7, 28, 14); prenatal(2026, 7, 28, 16)
+  chat(2026, 7, 29, 11); yoga(2026, 7, 29, 15)
+  chat(2026, 7, 30, 10); sub(2026, 7, 30, 13); yoga(2026, 7, 30, 16)
+  chat(2026, 7, 31, 9); yoga(2026, 7, 31, 13); prenatal(2026, 7, 31, 16)
 
   // ============================================================
   // BULAN AGUSTUS 2026 (Tahap Matured & Organic Growth, 1-27 Agustus 2026)
@@ -390,24 +267,24 @@ export function generateMomsieTransactions(): Transaction[] {
     const isPayday = d >= 25 && d <= 27
 
     if (isPayday) {
-      if (d === 25) offline(2026, 8, d, 29, 10)
-      sub(2026, 8, d, 30 + (d % 5), 11)
-      chat(2026, 8, d, (d % 6), 9)
-      chat(2026, 8, d, (d + 2) % 6, 14)
-      yoga(2026, 8, d, (d % 4), 16)
-      prenatal(2026, 8, d, (d + 1) % 6, 17)
+      if (d === 25) offline(2026, 8, d, 10)
+      sub(2026, 8, d, 11)
+      chat(2026, 8, d, 9)
+      chat(2026, 8, d, 14)
+      yoga(2026, 8, d, 16)
+      prenatal(2026, 8, d, 17)
     } else if (isWeekend) {
-      yoga(2026, 8, d, (d % 4), 9)
-      yoga(2026, 8, d, (d + 1) % 4, 11)
-      prenatal(2026, 8, d, (d % 6), 14)
-      prenatal(2026, 8, d, (d + 2) % 6, 16)
-      chat(2026, 8, d, (d % 5), 17)
+      yoga(2026, 8, d, 9)
+      yoga(2026, 8, d, 11)
+      prenatal(2026, 8, d, 14)
+      prenatal(2026, 8, d, 16)
+      chat(2026, 8, d, 17)
     } else {
-      chat(2026, 8, d, (d % 6), 10)
-      chat(2026, 8, d, (d + 1) % 6, 13)
-      yoga(2026, 8, d, (d % 4), 15)
-      if (d % 3 === 0) prenatal(2026, 8, d, (d % 5), 16)
-      if (d % 5 === 0) sub(2026, 8, d, 35 + (d % 5), 11)
+      chat(2026, 8, d, 10)
+      chat(2026, 8, d, 13)
+      yoga(2026, 8, d, 15)
+      if (d % 3 === 0) prenatal(2026, 8, d, 16)
+      if (d % 5 === 0) sub(2026, 8, d, 11)
     }
   }
 
@@ -796,4 +673,87 @@ function getCategoryLabel(catKey: string): string {
   if (k.includes("yoga")) return "Layanan Yoga"
   if (k.includes("subscription") || k.includes("sub")) return "Subscription Aplikasi"
   return "Doula Service"
+}
+
+export interface RegisteredUser {
+  id: string
+  name: string
+  email: string
+  phone: string
+  domisili: string
+  registeredAt: string
+  totalOrders: number
+  totalSpend: number
+  status: string
+}
+
+export function generate253RegisteredUsers(transactions: Transaction[]): RegisteredUser[] {
+  const userStatsMap: Record<string, { count: number; spend: number }> = {}
+  for (const tx of transactions) {
+    if (tx.userId) {
+      if (!userStatsMap[tx.userId]) userStatsMap[tx.userId] = { count: 0, spend: 0 }
+      userStatsMap[tx.userId].count += 1
+      userStatsMap[tx.userId].spend += (tx.nominal || 0)
+    }
+  }
+
+  const femaleNamesPool = [
+    "Siti Rahmawati", "Anisa Putri", "Dewi Lestari", "Bunga Citra", "Nurul Aini",
+    "Rina Astuti", "Fitriani Agustina", "Dian Sastrowardoyo", "Maya Indah Permata", "Ratna Juwita",
+    "Tari Melati", "Eka Yuliana", "Intan Permata Sari", "Amanda Putri", "Ningrum Wulandari",
+    "Melati Sukma Dewi", "Nabila Maharani", "Rizky Amelia", "Utami Sri Handayani", "Sri Handayani",
+    "Yulia Lestari", "Clarissa Anggraini", "Tari Rahayu", "Farida Nur Aini", "Kusuma Wardani",
+    "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari",
+    "Shinta Prameswari", "Kartika Sari", "Endang Sri Wahyuni", "Larasati Anggraeni", "Mega Kusuma Dewi",
+    "Novita Sari", "Pratiwi Rahmawati", "Retno Palupi", "Sari Asih", "Tiara Maharani",
+    "Widya Wulandari", "Yuni Shara", "Zulaikha Rahma", "Ayu Tingting", "Cinta Laura",
+    "Desy Ratnasari", "Erlina Febriani", "Febby Rastanty", "Gita Gutawa", "Hesti Purwadinata",
+    "Indah Permatasari", "Juwita Bahar", "Kiki Amalia", "Luna Maya", "Maudy Ayunda",
+    "Nia Ramadhani", "Olla Ramlan", "Paula Verhoeven", "Raisa Andriana", "Syahrini",
+    "Titi Kamal", "Ussy Sulistiawaty", "Vina Panduwinata", "Wulan Guritno", "Yuni Shara"
+  ]
+
+  const cities = [
+    "Sleman, DI Yogyakarta", "Bantul, DI Yogyakarta", "Kota Yogyakarta, DI Yogyakarta",
+    "Kulon Progo, DI Yogyakarta", "Gunungkidul, DI Yogyakarta", "Daerah Istimewa Yogyakarta",
+    "Solo, Jawa Tengah", "Klaten, Jawa Tengah", "Magelang, Jawa Tengah"
+  ]
+
+  const users: RegisteredUser[] = []
+  const startDate = new Date(2026, 4, 1)
+  const endDate = new Date(2026, 7, 27)
+
+  for (let i = 0; i < 253; i++) {
+    const userId = `USR-${100 + (i % femaleNamesPool.length)}`
+    const nameIndex = i % femaleNamesPool.length
+    const baseName = femaleNamesPool[nameIndex]
+    const name = i >= femaleNamesPool.length ? `${baseName} ${Math.floor(i / femaleNamesPool.length) + 1}` : baseName
+    const emailName = name.toLowerCase().replace(/[^a-z]/g, "")
+    const email = `${emailName}${i + 1}@gmail.com`
+    const phone = `081${Math.floor(10000000 + (i * 1234567) % 89999999)}`
+    const domisili = cities[i % cities.length]
+    const regTime = startDate.getTime() + Math.floor((i / 253) * (endDate.getTime() - startDate.getTime()))
+    const regDate = new Date(regTime).toISOString()
+
+    const stats = userStatsMap[userId] || { count: 0, spend: 0 }
+
+    users.push({
+      id: `USR-${100 + i}`,
+      name: name,
+      email: email,
+      phone: phone,
+      domisili: domisili,
+      registeredAt: regDate,
+      totalOrders: stats.count,
+      totalSpend: stats.spend,
+      status: "Aktif",
+    })
+  }
+
+  return users
+}
+
+export async function fetchRegisteredUsers(): Promise<RegisteredUser[]> {
+  const txs = await fetchTransactions(1000)
+  return generate253RegisteredUsers(txs)
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { Home, Users, HeartHandshake, CircleDollarSign, Settings, Newspaper, Globe, ArrowUpRight, Wallet, ReceiptText, CalendarDays, TrendingUp } from "lucide-react"
+import { Home, Users, HeartHandshake, CircleDollarSign, Settings, Newspaper, Globe, ArrowUpRight, Wallet, ReceiptText, CalendarDays, TrendingUp, Smartphone } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -9,6 +9,7 @@ const navItems = [
   { title: "Beranda", icon: Home, href: "/dashboard" },
   { title: "Transaksi", icon: ReceiptText, href: "/dashboard/transaksi" },
   { title: "Booking", icon: CalendarDays, href: "/dashboard/booking" },
+  { title: "User App", icon: Smartphone, href: "/dashboard/users" },
   { title: "Mitra", icon: Users, href: "/dashboard/mitra" },
   { title: "Mitra Doula", icon: HeartHandshake, href: "/dashboard/doula" },
   { title: "Keuangan", icon: TrendingUp, href: "/dashboard/keuangan" },

@@ -17,6 +17,7 @@ export interface Transaction {
   userId: string
   namaUser: string
   jenisLayanan: string
+  kategoriLayanan?: string
   deskripsi: string
   nominal: number
   hargaLayanan?: number
@@ -165,6 +166,7 @@ export function generateMomsieTransactions(): Transaction[] {
       userId: `USR-${100 + userIdx}`,
       namaUser: userName,
       jenisLayanan: catKey,
+      kategoriLayanan: catKey,
       deskripsi: layananName,
       nominal: nominal,
       hargaLayanan: hargaLayanan,
@@ -290,13 +292,22 @@ export function generateMomsieTransactions(): Transaction[] {
   // Calculate user repeat order sequences chronologically
   const userTxMap: Record<string, number> = {}
   const chronological = [...list].sort((a, b) => parseTime(a.createdAt) - parseTime(b.createdAt))
+
   for (const tx of chronological) {
-    userTxMap[tx.userId] = (userTxMap[tx.userId] || 0) + 1
-    tx.orderSequence = userTxMap[tx.userId]
-    tx.isRepeatOrder = tx.orderSequence > 1
+    if (tx.kategoriLayanan === "doula_offline") {
+      // Full Journey Doula Care is ALWAYS an ongoing 9-month accompaniment (no repeat order)
+      tx.orderSequence = 1
+      tx.isRepeatOrder = false
+      tx.status = "ongoing"
+    } else {
+      userTxMap[tx.userId] = (userTxMap[tx.userId] || 0) + 1
+      tx.orderSequence = userTxMap[tx.userId]
+      tx.isRepeatOrder = tx.orderSequence > 1
+    }
   }
+
   for (const tx of chronological) {
-    tx.userOrderCount = userTxMap[tx.userId]
+    tx.userOrderCount = userTxMap[tx.userId] || 1
   }
 
   // Sort newest first for display

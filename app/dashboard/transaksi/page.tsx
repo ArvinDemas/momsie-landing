@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, Calendar } from "lucide-react"
+import { Loader2, Search, Receipt, Wallet, TrendingUp, PiggyBank, RefreshCw, Eye } from "lucide-react"
 import { fetchTransactions, type Transaction } from "@/lib/dashboard-service"
 
 export default function TransaksiPage() {
@@ -57,7 +57,7 @@ export default function TransaksiPage() {
 
     // Filter Category
     if (catFilter !== "all") {
-      result = result.filter(t => (t.jenisLayanan || "").toLowerCase().includes(catFilter.toLowerCase()))
+      result = result.filter(t => (t.kategoriLayanan || t.jenisLayanan || "").toLowerCase().includes(catFilter.toLowerCase()))
     }
 
     // Filter Search
@@ -86,14 +86,15 @@ export default function TransaksiPage() {
     return "-"
   }
 
-  const statusColor = (s: string) => {
-    const lower = (s || "").toLowerCase()
-    if (lower === "paid" || lower === "settlement" || lower === "completed") return "bg-emerald-100 text-emerald-800 font-semibold border-emerald-200"
-    if (lower === "confirmed") return "bg-green-100 text-green-800 font-semibold border-green-200"
-    if (lower === "ongoing") return "bg-purple-100 text-purple-800 font-semibold border-purple-200"
-    if (lower === "pending" || lower === "menunggu_pembayaran") return "bg-amber-100 text-amber-800 font-semibold border-amber-200"
-    if (lower === "cancelled") return "bg-red-100 text-red-800 font-semibold border-red-200"
-    return "bg-gray-100 text-gray-700"
+  const renderStatusBadge = (status: string) => {
+    const lower = (status || "").toLowerCase()
+    if (lower === "ongoing" || lower === "berjalan") {
+      return <Badge className="bg-purple-100 text-purple-800 border-purple-200 font-bold text-xs">BERJALAN</Badge>
+    }
+    if (lower === "completed" || lower === "paid" || lower === "settlement") {
+      return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 font-bold text-xs">SELESAI</Badge>
+    }
+    return <Badge className="bg-amber-100 text-amber-800 border-amber-200 font-bold text-xs">PENDING</Badge>
   }
 
   if (loading) return (
@@ -106,19 +107,25 @@ export default function TransaksiPage() {
   const totalPlatformFee = filtered.reduce((acc, t) => acc + (t.platformFee || 0), 0)
   const totalAdminFee = filtered.reduce((acc, t) => acc + (t.adminFee || 2500), 0)
 
-  // Monthly counts for tab selector labels
-  const juniCount = transactions.filter(t => { const d = new Date(t.createdAt); return d.getMonth() === 5 && d.getFullYear() === 2026 }).length
-  const juliCount = transactions.filter(t => { const d = new Date(t.createdAt); return d.getMonth() === 6 && d.getFullYear() === 2026 }).length
-  const agustusCount = transactions.filter(t => { const d = new Date(t.createdAt); return d.getMonth() === 7 && d.getFullYear() === 2026 }).length
+  // Category quick filter options
+  const categoryQuickFilters = [
+    { key: "all", label: "Semua Pesanan" },
+    { key: "doula_chat", label: "Doula Chat" },
+    { key: "prenatal_yoga", label: "Prenatal Yoga" },
+    { key: "materi_online", label: "Materi Prenatal" },
+    { key: "doula_offline", label: "Full Journey Doula" },
+    { key: "paket_bundling", label: "Paket Bundling" },
+    { key: "subscription", label: "Subscription" },
+  ]
 
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Laporan Transaksi</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Laporan Transaksi</h1>
           <p className="text-sm text-muted-foreground">
-            Riwayat transaksi pembayaran masuk, rincian biaya admin, komisi platform, dan hak pendapatan doula.
+            Riwayat transaksi pembayaran masuk, rincian biaya admin, komisi platform, dan hak pendapatan mitra.
           </p>
         </div>
       </div>
@@ -131,7 +138,7 @@ export default function TransaksiPage() {
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Transaksi</p>
                 <p className="text-2xl font-extrabold text-gray-900 mt-1">{filtered.length} Order</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">Pesanan Berhasil</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">Tercatat di Sistem</p>
               </div>
               <div className="p-3 rounded-xl bg-pink-100 text-pink-700">
                 <Receipt className="size-5" />
@@ -186,7 +193,24 @@ export default function TransaksiPage() {
         </Card>
       </div>
 
-      {/* Filter Bar */}
+      {/* Category Tabs Bar */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+        {categoryQuickFilters.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setCatFilter(tab.key)}
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              catFilter === tab.key
+                ? "bg-pink-600 text-white shadow-xs"
+                : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Filter Bar (Clean Labels without Numbers or Prices in parentheses) */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-3">
@@ -200,39 +224,40 @@ export default function TransaksiPage() {
               />
             </div>
 
-            {/* Filter Period / Month */}
+            {/* Filter Period / Month (Clean Labels without counts in parentheses) */}
             <select
               value={monthFilter}
               onChange={e => setMonthFilter(e.target.value)}
-              className="px-3 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
+              className="px-4 py-2 rounded-lg border text-sm bg-pink-50 text-pink-900 font-semibold border-pink-200 focus:ring-2 focus:ring-pink-400 outline-none"
             >
-              <option value="all">Semua Periode ({transactions.length} Transaksi)</option>
-              <option value="juni">Juni 2026 ({juniCount} Transaksi)</option>
-              <option value="juli">Juli 2026 ({juliCount} Transaksi)</option>
-              <option value="agustus">Agustus 2026 ({agustusCount} Transaksi)</option>
+              <option value="all">Semua Periode</option>
+              <option value="juni">Juni 2026</option>
+              <option value="juli">Juli 2026</option>
+              <option value="agustus">Agustus 2026</option>
+            </select>
+
+            {/* Filter Category (Clean Labels without prices in parentheses) */}
+            <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="px-3 py-2 rounded-lg border text-sm bg-white font-medium">
+              <option value="all">Semua Kategori</option>
+              <option value="doula_chat">Doula Chat</option>
+              <option value="materi_online">Online Materi Prenatal</option>
+              <option value="doula_offline">Layanan Offline</option>
+              <option value="paket_bundling">Paket Bundling</option>
+              <option value="prenatal_yoga">Layanan Yoga</option>
+              <option value="subscription">Subscription Aplikasi</option>
             </select>
 
             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 rounded-lg border text-sm bg-white font-medium">
               <option value="all">Semua Status</option>
-              <option value="completed">Completed (Selesai)</option>
-              <option value="ongoing">Ongoing (Berjalan)</option>
+              <option value="completed">Selesai (Completed)</option>
+              <option value="ongoing">Berjalan (Ongoing)</option>
               <option value="pending">Pending</option>
-            </select>
-
-            <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="px-3 py-2 rounded-lg border text-sm bg-white font-medium">
-              <option value="all">Semua Kategori</option>
-              <option value="doula_chat">Doula Chat (30k)</option>
-              <option value="materi_online">Online Materi Prenatal (99k)</option>
-              <option value="doula_offline">Layanan Offline (3M)</option>
-              <option value="paket_bundling">Paket Bundling (135k)</option>
-              <option value="prenatal_yoga">Layanan Yoga (75k)</option>
-              <option value="subscription">Subscription Aplikasi (119k)</option>
             </select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Clean Financial Data Table */}
+      {/* Clean Financial Data Table with Tipe Order Column & Ongoing Full Journey Status */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">Daftar Transaksi Pembayaran ({filtered.length})</CardTitle>
@@ -242,15 +267,15 @@ export default function TransaksiPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-muted-foreground bg-muted/30">
-                  <th className="text-left py-3 px-2 font-medium">ID Transaksi</th>
-                  <th className="text-left py-3 px-2 font-medium">Waktu Transaksi</th>
-                  <th className="text-left py-3 px-2 font-medium">Pelanggan</th>
-                  <th className="text-left py-3 px-2 font-medium">Deskripsi Layanan</th>
-                  <th className="text-left py-3 px-2 font-medium">Nominal Gross</th>
-                  <th className="text-left py-3 px-2 font-medium">Biaya Admin</th>
-                  <th className="text-left py-3 px-2 font-medium">Platform Fee</th>
-                  <th className="text-left py-3 px-2 font-medium">Hak Doula</th>
-                  <th className="text-left py-3 px-2 font-medium">Status</th>
+                  <th className="text-left py-3 px-3 font-medium">ID Transaksi</th>
+                  <th className="text-left py-3 px-3 font-medium">Waktu Transaksi</th>
+                  <th className="text-left py-3 px-3 font-medium">Pelanggan</th>
+                  <th className="text-left py-3 px-3 font-medium">Deskripsi Layanan</th>
+                  <th className="text-left py-3 px-3 font-medium">Tipe Order</th>
+                  <th className="text-left py-3 px-3 font-medium">Nominal Gross</th>
+                  <th className="text-left py-3 px-3 font-medium">Platform Fee</th>
+                  <th className="text-left py-3 px-3 font-medium">Hak Doula</th>
+                  <th className="text-left py-3 px-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -264,16 +289,31 @@ export default function TransaksiPage() {
 
                   return (
                     <tr key={tx.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
-                      <td className="py-3 px-2 font-mono text-xs font-semibold text-gray-700">{tx.id}</td>
-                      <td className="py-3 px-2 text-xs text-gray-600">{formatDate(tx.createdAt)}</td>
-                      <td className="py-3 px-2 font-semibold text-gray-900">{tx.namaUser}</td>
-                      <td className="py-3 px-2 text-xs text-gray-800">{tx.deskripsi || tx.jenisLayanan}</td>
-                      <td className="py-3 px-2 font-bold text-gray-900">{formatRp(nominal)}</td>
-                      <td className="py-3 px-2 text-xs text-amber-700 font-medium">{formatRp(adminFee)}</td>
-                      <td className="py-3 px-2 text-xs text-purple-700 font-semibold">{formatRp(platformFee)}</td>
-                      <td className="py-3 px-2 text-xs text-emerald-700 font-bold">{isSub ? "-" : formatRp(doulaEarnings)}</td>
-                      <td className="py-3 px-2">
-                        <Badge className={statusColor(tx.status)}>{(tx.status || "COMPLETED").toUpperCase()}</Badge>
+                      <td className="py-3 px-3 font-mono text-xs font-semibold text-gray-700">{tx.id}</td>
+                      <td className="py-3 px-3 text-xs text-gray-600">{formatDate(tx.createdAt)}</td>
+                      <td className="py-3 px-3 font-semibold text-gray-900">{tx.namaUser}</td>
+                      <td className="py-3 px-3 text-xs text-gray-800">{tx.deskripsi || tx.jenisLayanan}</td>
+
+                      {/* Clean & Professional Tipe Order Column */}
+                      <td className="py-3 px-3">
+                        {tx.isRepeatOrder ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-xs">
+                            Repeat Order
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200 font-medium text-xs">
+                            Order Pertama
+                          </Badge>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-3 font-bold text-gray-900">{formatRp(nominal)}</td>
+                      <td className="py-3 px-3 text-xs text-purple-700 font-semibold">{formatRp(platformFee)}</td>
+                      <td className="py-3 px-3 text-xs text-emerald-700 font-bold">{isSub ? "-" : formatRp(doulaEarnings)}</td>
+
+                      {/* Status Column (Full Journey Doula Care shows BERJALAN) */}
+                      <td className="py-3 px-3">
+                        {renderStatusBadge(tx.status)}
                       </td>
                     </tr>
                   )
@@ -281,7 +321,7 @@ export default function TransaksiPage() {
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={9} className="text-center py-12 text-muted-foreground">
-                      Tidak ada transaksi ditemukan
+                      Tidak ada transaksi ditemukan untuk filter ini
                     </td>
                   </tr>
                 )}

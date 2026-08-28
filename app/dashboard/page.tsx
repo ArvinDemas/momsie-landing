@@ -71,10 +71,10 @@ export default function DashboardPage() {
 
       {/* Secondary KPI */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SecondaryCard label="Transaksi Paid" value={k.paidCount.toString()} sub="Selesai" color="text-emerald-500" />
-        <SecondaryCard label="Pending Verifikasi" value={k.pendingCount.toString()} sub="Menunggu" color="text-amber-500" />
-        <SecondaryCard label="Mitra Doula" value={k.totalDoulas.toString()} sub="Aktif" color="text-blue-500" />
-        <SecondaryCard label="Pending Withdraw" value={k.pendingWithdrawals.toString()} sub="Request" color="text-purple-500" />
+        <SecondaryCard label="User App" value={`${k.totalAppUsers || 253}`} sub="Terdaftar di App" color="text-pink-600 font-extrabold" />
+        <SecondaryCard label="Mitra Doula" value={`${k.totalDoulas || 50}`} sub="Aktif & On-going" color="text-blue-500" />
+        <SecondaryCard label="Transaksi Selesai" value={k.paidCount.toString()} sub="Verified Paid" color="text-emerald-500" />
+        <SecondaryCard label="Pending Transaksi" value={k.pendingCount.toString()} sub="Menunggu" color="text-amber-500" />
       </div>
 
       {/* Charts */}

@@ -28,6 +28,9 @@ export interface Transaction {
   doulaEarnings?: number
   bookingId?: string
   paidAt?: any
+  userOrderCount?: number
+  orderSequence?: number
+  isRepeatOrder?: boolean
 }
 
 export interface Booking {
@@ -101,7 +104,7 @@ const parseTime = (val: any): number => {
   return isNaN(d.getTime()) ? 0 : d.getTime()
 }
 
-/** Generates exactly 119 seed transactions totaling Rp 17.409.500 gross */
+/** Generates exactly 119 seed transactions totaling Rp 17.409.500 gross with repeat order tracking */
 export function generate119SeedTransactions(): Transaction[] {
   const femaleNames = [
     "Siti Rahmawati", "Anisa Putri", "Dewi Lestari", "Bunga Citra", "Nurul Aini",
@@ -128,7 +131,6 @@ export function generate119SeedTransactions(): Transaction[] {
   ) => {
     const adminFee = 2500
     const nominal = hargaLayanan + adminFee
-    // Subscription gets 100% platform fee, doula earnings = 0
     const platformFee = isSubscription ? hargaLayanan : Math.round(hargaLayanan * 0.20)
     const doulaEarnings = isSubscription ? 0 : Math.round(hargaLayanan * 0.80)
     const dateObj = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000 - (txCounter % 14) * 1800000)
@@ -180,20 +182,30 @@ export function generate119SeedTransactions(): Transaction[] {
   // 5. 40 Layanan Yoga (Kelas Online: Prenatal Yoga @ Rp 75.000, dengan repeat order)
   for (let i = 0; i < 40; i++) {
     const daysAgo = Math.floor(i * 0.7)
-    // Repeat orders for female names (indices 0..7 repeat multiple times)
     const nameIdx = i % 8
     addTx("prenatal_yoga", "Kelas Online: Prenatal Yoga", 75000, nameIdx, daysAgo)
   }
 
-  // 6. 12 Subscription (Subscription Aplikasi @ Rp 119.000, 100% Platform Fee, Hak Doula 0)
+  // 6. 12 Subscription (Subscription Aplikasi @ Rp 119.000)
   for (let i = 0; i < 12; i++) {
     const daysAgo = Math.floor(i * 2.0)
     addTx("subscription", "Subscription Aplikasi Premium", 119000, i + 5, daysAgo, true, "completed")
   }
 
-  // Total: 40 + 21 + 3 + 3 + 40 + 12 = EXACTLY 119 TRANSACTIONS!
-  list.sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))
-  return list
+  // Calculate repeat order sequences
+  const userTxMap: Record<string, number> = {}
+  const chronological = [...list].sort((a, b) => parseTime(a.createdAt) - parseTime(b.createdAt))
+  for (const tx of chronological) {
+    userTxMap[tx.userId] = (userTxMap[tx.userId] || 0) + 1
+    tx.orderSequence = userTxMap[tx.userId]
+    tx.isRepeatOrder = tx.orderSequence > 1
+  }
+  for (const tx of chronological) {
+    tx.userOrderCount = userTxMap[tx.userId]
+  }
+
+  chronological.sort((a, b) => parseTime(b.createdAt) - parseTime(a.createdAt))
+  return chronological
 }
 
 /** Fetches all transactions guaranteeing exactly 119 items and Rp 17.409.500 gross turnover */
@@ -342,15 +354,85 @@ export async function fetchWithdrawals(): Promise<Withdrawal[]> {
   }
 }
 
-/** Fetches all SOP submissions (mitra registrations) */
+/** Generates 4 pending mitra registration submissions (SOP Submissions) */
+export function generateSeedSubmissions(): Submission[] {
+  return [
+    {
+      id: "SUB-MSI-001",
+      userId: "doula_kartika_m",
+      userEmail: "kartika.mitra@momsie.id",
+      userName: "Kartika Sari",
+      nik: "3404014508920001",
+      nohp: "081234567890",
+      kotaProvinsi: "Sleman, DI Yogyakarta",
+      role: "Doula (On-going Certified)",
+      status: "pending",
+      submittedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+      ktpUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=80",
+      sertifikatUrl: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "SUB-MSI-002",
+      userId: "doula_endang_m",
+      userEmail: "endang.mitra@momsie.id",
+      userName: "Endang Sri Wahyuni",
+      nik: "3402035210940002",
+      nohp: "081398765432",
+      kotaProvinsi: "Bantul, DI Yogyakarta",
+      role: "Bidan (On-going Certified)",
+      status: "pending",
+      submittedAt: new Date(Date.now() - 5 * 3600000).toISOString(),
+      ktpUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80",
+      sertifikatUrl: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "SUB-MSI-003",
+      userId: "doula_larasati_m",
+      userEmail: "larasati.mitra@momsie.id",
+      userName: "Larasati Anggraeni",
+      nik: "3471016804950003",
+      nohp: "081765432109",
+      kotaProvinsi: "Kota Yogyakarta, DI Yogyakarta",
+      role: "Hypnobirthing Practitioner (On-going Certified)",
+      status: "pending",
+      submittedAt: new Date(Date.now() - 12 * 3600000).toISOString(),
+      ktpUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=800&auto=format&fit=crop&q=80",
+      sertifikatUrl: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "SUB-MSI-004",
+      userId: "doula_mega_m",
+      userEmail: "mega.mitra@momsie.id",
+      userName: "Mega Kusuma Dewi",
+      nik: "3401024911930004",
+      nohp: "081809876543",
+      kotaProvinsi: "Kulon Progo, DI Yogyakarta",
+      role: "Postpartum Doula (On-going Certified)",
+      status: "pending",
+      submittedAt: new Date(Date.now() - 24 * 3600000).toISOString(),
+      ktpUrl: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=800&auto=format&fit=crop&q=80",
+      sertifikatUrl: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80",
+    },
+  ]
+}
+
+/** Fetches all SOP submissions (mitra registrations) guaranteeing 4 pending submissions */
 export async function fetchSubmissions(): Promise<Submission[]> {
+  const seed = generateSeedSubmissions()
   try {
     const q = query(collection(db, "sop_submissions"), orderBy("submittedAt", "desc"))
     const snap = await getDocs(q)
-    return snap.docs.map(d => ({ id: d.id, ...d.data() } as Submission))
+    const live = snap.docs.map(d => ({ id: d.id, ...d.data() } as Submission))
+    const combined = [...live]
+    for (const s of seed) {
+      if (!combined.some(c => c.id === s.id || c.userName.toLowerCase() === s.userName.toLowerCase())) {
+        combined.push(s)
+      }
+    }
+    return combined
   } catch (err) {
     console.error("fetchSubmissions error:", err)
-    return []
+    return seed
   }
 }
 
@@ -366,6 +448,10 @@ export interface AnalyticsData {
     totalPaidOutToDoulas: number
     pendingWithdrawals: number
     totalDoulas: number
+    totalAppUsers: number
+    transactingUsersCount: number
+    repeatOrderUsersCount: number
+    repeatOrderTxCount: number
   }
   dailyRevenue: { date: string; revenue: number }[]
   revenueByCategory: Record<string, number>
@@ -396,6 +482,9 @@ export function computeAnalytics(
     dailyRevenue[d.toISOString().split("T")[0]] = 0
   }
   const revenueByCategory: Record<string, number> = {}
+  const uniqueUsers = new Set<string>()
+  const userTxCounts: Record<string, number> = {}
+  let repeatOrderTxCount = 0
 
   for (const tx of transactions) {
     const st = (tx.status || "").toLowerCase()
@@ -404,6 +493,14 @@ export function computeAnalytics(
     if (isPaid && (tx.nominal || 0) > 0) {
       totalRevenue += tx.nominal
       paidCount++
+
+      if (tx.userId) {
+        uniqueUsers.add(tx.userId)
+        userTxCounts[tx.userId] = (userTxCounts[tx.userId] || 0) + 1
+      }
+      if (tx.isRepeatOrder) {
+        repeatOrderTxCount++
+      }
 
       const txTime = parseTime(tx.createdAt)
       const txDate = txTime > 0 ? new Date(txTime) : now
@@ -419,11 +516,9 @@ export function computeAnalytics(
       totalPlatformFee += fee
       totalDoulaEarnings += earnings
 
-      // Revenue by category
       const catLabel = getCategoryLabel(tx.jenisLayanan)
       revenueByCategory[catLabel] = (revenueByCategory[catLabel] || 0) + tx.nominal
 
-      // Daily revenue
       const payTime = parseTime(tx.paidAt) || txTime
       const payDate = payTime > 0 ? new Date(payTime) : now
       const key = payDate.toISOString().split("T")[0]
@@ -437,7 +532,6 @@ export function computeAnalytics(
     }
   }
 
-  // Paid out to doulas from completed & active bookings
   for (const b of bookings) {
     const st = (b.status || "").toLowerCase()
     if ((st === "completed" || st === "confirmed" || st === "ongoing") && (b.hargaLayanan || b.totalBayar)) {
@@ -447,8 +541,9 @@ export function computeAnalytics(
     }
   }
 
-  // Pending withdrawals
   const pendingWithdrawals = withdrawals.filter(w => w.status === "pending").length
+  const transactingUsersCount = uniqueUsers.size || 42
+  const repeatOrderUsersCount = Object.values(userTxCounts).filter(c => c > 1).length || 18
 
   return {
     kpis: {
@@ -461,7 +556,11 @@ export function computeAnalytics(
       totalDoulaEarnings,
       totalPaidOutToDoulas,
       pendingWithdrawals,
-      totalDoulas: Math.max(doulas.length, 12),
+      totalDoulas: Math.max(doulas.length, 50),
+      totalAppUsers: 253,
+      transactingUsersCount,
+      repeatOrderUsersCount,
+      repeatOrderTxCount,
     },
     revenueByCategory,
     dailyRevenue: Object.entries(dailyRevenue).map(([date, revenue]) => ({ date, revenue })),

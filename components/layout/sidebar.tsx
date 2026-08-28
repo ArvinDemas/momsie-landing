@@ -11,7 +11,6 @@ const navItems = [
   { title: "Booking", icon: CalendarDays, href: "/dashboard/booking" },
   { title: "Mitra", icon: Users, href: "/dashboard/mitra" },
   { title: "Mitra Doula", icon: HeartHandshake, href: "/dashboard/doula" },
-  { title: "Penarikan Dana", icon: Wallet, href: "/dashboard/withdrawal" },
   { title: "Keuangan", icon: TrendingUp, href: "/dashboard/keuangan" },
   { title: "Manajemen Berita", icon: Newspaper, href: "/dashboard/berita" },
 ]

@@ -770,16 +770,26 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
     }
   }
 
-  const femaleNamesPool = [
-    "Siti Rahmawati", "Anisa Putri", "Dewi Lestari", "Bunga Citra", "Nurul Aini",
-    "Rina Astuti", "Fitriani Agustina", "Dian Sastrowardoyo", "Maya Indah Permata", "Ratna Juwita",
-    "Tari Melati", "Eka Yuliana", "Intan Permata Sari", "Amanda Putri", "Ningrum Wulandari",
-    "Melati Sukma Dewi", "Nabila Maharani", "Rizky Amelia", "Utami Sri Handayani", "Sri Handayani",
-    "Yulia Lestari", "Clarissa Anggraini", "Tari Rahayu", "Farida Nur Aini", "Kusuma Wardani",
-    "Nadya Safira", "Alya Rahma", "Bella Kartika", "Tri Utami", "Wulan Dari",
-    "Shinta Prameswari", "Kartika Sari", "Endang Sri Wahyuni", "Larasati Anggraeni", "Mega Kusuma Dewi",
-    "Novita Sari", "Pratiwi Rahmawati", "Retno Palupi", "Sari Asih", "Tiara Maharani",
-    "Widya Wulandari", "Yuni Shara"
+  const firstNamesPool = [
+    "Siti", "Anisa", "Dewi", "Bunga", "Nurul", "Rina", "Fitriani", "Dian", "Maya", "Ratna",
+    "Tari", "Eka", "Intan", "Amanda", "Ningrum", "Melati", "Nabila", "Rizky", "Utami", "Sri",
+    "Yulia", "Clarissa", "Farida", "Kusuma", "Nadya", "Alya", "Bella", "Tri", "Wulan", "Shinta",
+    "Kartika", "Endang", "Larasati", "Mega", "Novita", "Pratiwi", "Retno", "Sari", "Tiara", "Widya",
+    "Yuni", "Zulaikha", "Ayu", "Cinta", "Desy", "Erlina", "Febby", "Gita", "Hesti", "Indah",
+    "Juwita", "Kiki", "Luna", "Maudy", "Nia", "Olla", "Paula", "Raisa", "Syahrini", "Titi",
+    "Ussy", "Vina", "Wulan", "Yadira", "Zahra", "Audrey", "Bintang", "Chika", "Dara", "Elma",
+    "Fatin", "Gisella", "Hannah", "Isyana", "Jessica", "Kezia", "Laura", "Mutiara", "Nadia", "Olivia",
+    "Putri", "Qori", "Rania", "Salma", "Talia", "Ulima", "Vania", "Winona", "Yasmine", "Zenia"
+  ]
+
+  const lastNamesPool = [
+    "Rahmawati", "Putri", "Lestari", "Citra", "Aini", "Astuti", "Agustina", "Sastrowardoyo", "Permata", "Juwita",
+    "Melati", "Yuliana", "Sari", "Wulandari", "Dewi", "Maharani", "Amelia", "Handayani", "Anggraini", "Rahayu",
+    "Wardani", "Safira", "Rahma", "Kartika", "Utami", "Dari", "Prameswari", "Wahyuni", "Palupi", "Asih",
+    "Shara", "Ratnasari", "Febriani", "Rastanty", "Gutawa", "Purwadinata", "Permatasari", "Bahar", "Amalia", "Maya",
+    "Ayunda", "Ramadhani", "Ramlan", "Verhoeven", "Andriana", "Kamal", "Sulistiawaty", "Panduwinata", "Guritno", "Sastry",
+    "Hepburn", "Jessica", "Theana", "Shidqia", "Anastasia", "Rashid", "Sarasvati", "Mila", "Karamoy", "Basuki",
+    "Kusuma", "Wijaya", "Susanti", "Puspasari", "Kurnia", "Hapsari", "Damayanti", "Firmansyah", "Pratiwi", "Wibowo"
   ]
 
   const cities = [
@@ -794,10 +804,11 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
 
   for (let i = 0; i < 253; i++) {
     const userId = `USR-${100 + i}`
-    const nameIndex = i % femaleNamesPool.length
-    const baseName = femaleNamesPool[nameIndex]
-    const name = i >= femaleNamesPool.length ? `${baseName} ${Math.floor(i / femaleNamesPool.length) + 1}` : baseName
-    const emailName = name.toLowerCase().replace(/[^a-z]/g, "")
+    const fn = firstNamesPool[i % firstNamesPool.length]
+    const ln = lastNamesPool[Math.floor(i / 3) % lastNamesPool.length]
+    const name = `${fn} ${ln}`
+
+    const emailName = `${fn.toLowerCase()}.${ln.toLowerCase()}`
     const email = `${emailName}${i + 1}@gmail.com`
     const phone = `081${Math.floor(10000000 + (i * 1234567) % 89999999)}`
     const domisili = cities[i % cities.length]
@@ -821,6 +832,15 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
   }
 
   return users
+}
+
+export function formatUserDisplayName(name: string): string {
+  if (!name) return name
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0]
+  const first = parts[0]
+  const lastInitial = parts[1][0].toUpperCase()
+  return `${first} ${lastInitial}.`
 }
 
 export async function fetchRegisteredUsers(): Promise<RegisteredUser[]> {

@@ -3,31 +3,31 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, Activity, Eye, Download, Smartphone, Users, ChevronDown } from "lucide-react"
-import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone } from "@/lib/dashboard-service"
+import { Loader2, Search, Activity, ChevronDown } from "lucide-react"
+import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone, formatUserDisplayName } from "@/lib/dashboard-service"
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar } from "recharts"
 
 // Mini sparkline datasets mirroring Play Console curves
 const sparkJangkauan = [
-  { day: "31 Jul", val: 3 }, { day: "2 Aug", val: 5 }, { day: "5 Aug", val: 2 },
-  { day: "8 Aug", val: 7 }, { day: "12 Aug", val: 4 }, { day: "16 Aug", val: 6 },
-  { day: "20 Aug", val: 3 }, { day: "24 Aug", val: 8 }, { day: "27 Aug", val: 10 }
+  { day: "31 Jul", val: 320 }, { day: "2 Aug", val: 450 }, { day: "5 Aug", val: 280 },
+  { day: "8 Aug", val: 670 }, { day: "12 Aug", val: 540 }, { day: "16 Aug", val: 760 },
+  { day: "20 Aug", val: 830 }, { day: "24 Aug", val: 1240 }, { day: "27 Aug", val: 1840 }
 ]
 
 const sparkAkuisisi = [
-  { day: "31 Jul", val: 1 }, { day: "2 Aug", val: 0 }, { day: "5 Aug", val: 2 },
-  { day: "8 Aug", val: 1 }, { day: "12 Aug", val: 3 }, { day: "16 Aug", val: 1 },
-  { day: "20 Aug", val: 2 }, { day: "24 Aug", val: 1 }, { day: "27 Aug", val: 3 }
+  { day: "31 Jul", val: 15 }, { day: "2 Aug", val: 28 }, { day: "5 Aug", val: 42 },
+  { day: "8 Aug", val: 65 }, { day: "12 Aug", val: 110 }, { day: "16 Aug", val: 145 },
+  { day: "20 Aug", val: 180 }, { day: "24 Aug", val: 215 }, { day: "27 Aug", val: 253 }
 ]
 
 const sparkAktifkan = [
-  { day: "31 Jul", val: 1 }, { day: "5 Aug", val: 2 }, { day: "10 Aug", val: 0 },
-  { day: "15 Aug", val: 3 }, { day: "20 Aug", val: 1 }, { day: "27 Aug", val: 2 }
+  { day: "31 Jul", val: 12 }, { day: "5 Aug", val: 38 }, { day: "10 Aug", val: 85 },
+  { day: "15 Aug", val: 130 }, { day: "20 Aug", val: 175 }, { day: "27 Aug", val: 241 }
 ]
 
 const sparkInteraksi = [
-  { day: "31 Jul", val: 2 }, { day: "5 Aug", val: 5 }, { day: "10 Aug", val: 1 },
-  { day: "15 Aug", val: 6 }, { day: "20 Aug", val: 3 }, { day: "27 Aug", val: 5 }
+  { day: "31 Jul", val: 18 }, { day: "5 Aug", val: 45 }, { day: "10 Aug", val: 92 },
+  { day: "15 Aug", val: 124 }, { day: "20 Aug", val: 162 }, { day: "27 Aug", val: 198 }
 ]
 
 export default function UsersPage() {
@@ -123,22 +123,22 @@ export default function UsersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Kembangkan basis pengguna</h1>
           <p className="text-sm text-muted-foreground">
-            Performa Anda di Google Play Store & Manajemen Basis Terdaftar Aplikasi Momsie.
+            Performa Perangkat, Akuisisi Pengguna Aktif, dan Manajemen Akun Aplikasi Momsie.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Badge className="bg-pink-100 text-pink-800 border-pink-200 font-semibold px-3 py-1 text-xs">
-            Google Play Console Synced
+            253 Total Pengguna Terdaftar
           </Badge>
         </div>
       </div>
 
-      {/* Google Play Console Styled Metric Cards Banner */}
+      {/* Play Console Styled Metric Cards Banner */}
       <Card className="bg-white border-gray-200 shadow-sm overflow-hidden">
         <CardHeader className="pb-3 border-b border-gray-100 bg-gray-50/50">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <CardTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
-              <Activity className="size-5 text-blue-600" /> Performa Anda di Google Play
+              <Activity className="size-5 text-pink-600" /> Performa Aplikasi Momsie
             </CardTitle>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 font-medium">Metrik menurut: <strong className="text-gray-800">Perangkat</strong></span>
@@ -156,8 +156,8 @@ export default function UsersPage() {
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Jangkauan</p>
                 <p className="text-xs text-gray-600 font-medium mt-0.5">Tayangan perangkat</p>
                 <div className="flex items-baseline justify-between mt-1">
-                  <p className="text-2xl font-black text-gray-900">64</p>
-                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                  <p className="text-2xl font-black text-gray-900">1.840</p>
+                  <p className="text-[11px] font-bold text-emerald-600">+14%</p>
                 </div>
               </div>
               <div className="h-[45px] w-full mt-2">
@@ -169,14 +169,14 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {/* Metric 2: Akuisisi / Akuisisi Perangkat */}
+            {/* Metric 2: Akuisisi / Akuisisi Perangkat (253 User) */}
             <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
               <div>
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Akuisisi</p>
                 <p className="text-xs text-gray-600 font-medium mt-0.5">Akuisisi perangkat</p>
                 <div className="flex items-baseline justify-between mt-1">
-                  <p className="text-2xl font-black text-gray-900">12</p>
-                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                  <p className="text-2xl font-black text-gray-900">{users.length}</p>
+                  <p className="text-[11px] font-bold text-emerald-600">+22%</p>
                 </div>
               </div>
               <div className="h-[45px] w-full mt-2">
@@ -188,14 +188,14 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {/* Metric 3: Aktifkan / Perangkat Pertama Dibuka */}
+            {/* Metric 3: Aktifkan / Perangkat Pertama Dibuka (241 Perangkat) */}
             <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
               <div>
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Aktifkan</p>
                 <p className="text-xs text-gray-600 font-medium mt-0.5">Pertama dibuka</p>
                 <div className="flex items-baseline justify-between mt-1">
-                  <p className="text-2xl font-black text-gray-900">8</p>
-                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                  <p className="text-2xl font-black text-gray-900">241</p>
+                  <p className="text-[11px] font-bold text-emerald-600">95.2%</p>
                 </div>
               </div>
               <div className="h-[45px] w-full mt-2">
@@ -207,14 +207,14 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {/* Metric 4: Interaksi / Aktif Bulanan (MAU) */}
+            {/* Metric 4: Interaksi / Aktif Bulanan (198 MAU) */}
             <div className="p-3.5 rounded-xl bg-white border border-gray-200 flex flex-col justify-between h-[155px]">
               <div>
                 <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Interaksi</p>
-                <p className="text-xs text-gray-600 font-medium mt-0.5">Aktif bulanan</p>
+                <p className="text-xs text-gray-600 font-medium mt-0.5">Aktif bulanan (MAU)</p>
                 <div className="flex items-baseline justify-between mt-1">
-                  <p className="text-2xl font-black text-gray-900">13</p>
-                  <p className="text-[11px] font-bold text-blue-600">0%</p>
+                  <p className="text-2xl font-black text-gray-900">198</p>
+                  <p className="text-[11px] font-bold text-purple-600">78.2%</p>
                 </div>
               </div>
               <div className="h-[45px] w-full mt-2">
@@ -233,11 +233,11 @@ export default function UsersPage() {
                 <p className="text-xs text-gray-600 font-medium mt-0.5">Retensi 7 hari</p>
                 <div className="flex items-baseline justify-between mt-1">
                   <p className="text-2xl font-black text-gray-900">78.2%</p>
-                  <p className="text-[11px] font-bold text-emerald-600">Aktif</p>
+                  <p className="text-[11px] font-bold text-emerald-600">Tinggi</p>
                 </div>
               </div>
-              <div className="flex items-center justify-center h-[45px] bg-gray-50 rounded-lg text-xs text-gray-500 font-medium">
-                Data Konsisten
+              <div className="flex items-center justify-center h-[45px] bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold">
+                Retensi Sangat Baik
               </div>
             </div>
           </div>
@@ -308,33 +308,39 @@ export default function UsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(u => (
-                  <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-2 font-mono text-xs font-semibold text-gray-700">{u.id}</td>
-                    <td className="py-3 px-2 font-semibold text-gray-900">{u.name}</td>
-                    <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskEmail(u.email)}</td>
-                    <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskPhone(u.phone)}</td>
-                    <td className="py-3 px-2 text-xs text-gray-700">{u.domisili}</td>
-                    <td className="py-3 px-2 text-xs text-gray-600">{formatDate(u.registeredAt)}</td>
-                    <td className="py-3 px-2">
-                      {u.totalOrders > 0 ? (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-xs">
-                          {u.totalOrders} Order Selesai
+                {filtered.map(u => {
+                  const handle = `@${u.name.toLowerCase().replace(/[^a-z]/g, "")}`
+                  return (
+                    <tr key={u.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-2 font-mono text-xs font-semibold text-gray-700">{u.id}</td>
+                      <td className="py-3 px-2">
+                        <p className="font-semibold text-gray-900">{formatUserDisplayName(u.name)}</p>
+                        <p className="text-[11px] text-gray-400 font-mono">{handle}</p>
+                      </td>
+                      <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskEmail(u.email)}</td>
+                      <td className="py-3 px-2 font-mono text-xs text-gray-600">{maskPhone(u.phone)}</td>
+                      <td className="py-3 px-2 text-xs text-gray-700">{u.domisili}</td>
+                      <td className="py-3 px-2 text-xs text-gray-600">{formatDate(u.registeredAt)}</td>
+                      <td className="py-3 px-2">
+                        {u.totalOrders > 0 ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold text-xs">
+                            {u.totalOrders} Order Selesai
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-gray-400 font-medium">0 Order (Download Only)</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-2 text-xs font-semibold text-gray-900">
+                        {u.totalSpend > 0 ? formatRp(u.totalSpend) : "-"}
+                      </td>
+                      <td className="py-3 px-2">
+                        <Badge className="bg-emerald-100 text-emerald-800 font-semibold text-xs border-emerald-200">
+                          AKTIF
                         </Badge>
-                      ) : (
-                        <span className="text-xs text-gray-400 font-medium">0 Order (Download Only)</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-2 text-xs font-semibold text-gray-900">
-                      {u.totalSpend > 0 ? formatRp(u.totalSpend) : "-"}
-                    </td>
-                    <td className="py-3 px-2">
-                      <Badge className="bg-emerald-100 text-emerald-800 font-semibold text-xs border-emerald-200">
-                        AKTIF
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  )
+                })}
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={9} className="text-center py-12 text-muted-foreground">

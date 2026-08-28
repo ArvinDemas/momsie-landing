@@ -517,11 +517,13 @@ export async function fetchDoulas(): Promise<Mitra[]> {
         combined.push(sd)
       }
     }
-    // Filter out "Arvin Demas Naryama" per user request
-    return combined.filter(d => !d.name.toLowerCase().includes("arvin") && !d.name.toLowerCase().includes("demas"))
+    // Filter out "Arvin Demas Naryama" and slice to EXACTLY 50 Mitra Doulas total
+    const filtered = combined.filter(d => !d.name.toLowerCase().includes("arvin") && !d.name.toLowerCase().includes("demas"))
+    return filtered.slice(0, 50)
   } catch (err) {
     console.error("fetchDoulas error:", err)
-    return seedDoulas.filter(d => !d.name.toLowerCase().includes("arvin") && !d.name.toLowerCase().includes("demas"))
+    const filtered = seedDoulas.filter(d => !d.name.toLowerCase().includes("arvin") && !d.name.toLowerCase().includes("demas"))
+    return filtered.slice(0, 50)
   }
 }
 

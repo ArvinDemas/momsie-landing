@@ -848,7 +848,7 @@ export function generate253RegisteredUsers(transactions: Transaction[]): Registe
   ]
 
   const users: RegisteredUser[] = []
-  const startDate = new Date(2026, 4, 1)
+  const startDate = new Date(2026, 5, 1) // App launched in June 2026 (Month 5 zero-indexed)
   const endDate = new Date(2026, 7, 27)
 
   for (let i = 0; i < 253; i++) {
@@ -919,4 +919,11 @@ export function formatUserDisplayName(name: string): string {
 export async function fetchRegisteredUsers(): Promise<RegisteredUser[]> {
   const txs = await fetchTransactions(1000)
   return generate253RegisteredUsers(txs)
+}
+
+export function maskNik(nik: string): string {
+  if (!nik) return nik
+  const clean = nik.replace(/\s+/g, "")
+  if (clean.length <= 6) return clean
+  return `${clean.substring(0, 4)}**********${clean.substring(clean.length - 2)}`
 }

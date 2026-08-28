@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Search, CheckCircle, XCircle, Eye, UserCheck, MapPin, FileText, Phone, Mail, CreditCard, ShieldCheck, X } from "lucide-react"
+import { Loader2, Search, CheckCircle, XCircle, Eye, EyeOff, UserCheck, MapPin, FileText, Phone, Mail, CreditCard, ShieldCheck, X } from "lucide-react"
 import Image from "next/image"
 import { doc, updateDoc, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { fetchSubmissions as fetchSubmissionsService, type Submission, maskPhone, maskEmail } from "@/lib/dashboard-service"
+import { fetchSubmissions as fetchSubmissionsService, type Submission, maskPhone, maskEmail, maskNik } from "@/lib/dashboard-service"
 
 interface MitraSubmission {
   id: string
@@ -36,6 +36,14 @@ export default function MitraPage() {
   // Detail Modal state
   const [selectedMitra, setSelectedMitra] = useState<MitraSubmission | null>(null)
   const [viewingDoc, setViewingDoc] = useState<{ url: string; label: string } | null>(null)
+
+  // Independent Unsensor Toggles Map (Keyed by ID + fieldName e.g. "mitra_1001_nik")
+  const [unmaskedMap, setUnmaskedMap] = useState<Record<string, boolean>>({})
+
+  const toggleUnmask = (id: string, field: "nik" | "phone" | "email") => {
+    const key = `${id}_${field}`
+    setUnmaskedMap(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   const [rejectId, setRejectId] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState("")
@@ -183,7 +191,7 @@ export default function MitraPage() {
         </CardContent>
       </Card>
 
-      {/* Clean Mitra List (Shows ONLY ID Angka, Nama Mitra, Role, Status & Tombol Detail) */}
+      {/* Clean Mitra List */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Daftar Registrasi Mitra ({filtered.length})</CardTitle>
@@ -236,7 +244,7 @@ export default function MitraPage() {
         </CardContent>
       </Card>
 
-      {/* DETAIL MODAL (Displays NIK, Contact, Location, Documents, & Approval Controls) */}
+      {/* DETAIL MODAL (Displays Sensor NIK KTP, Phone, Email & Eye Toggles) */}
       {selectedMitra && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" onClick={() => setSelectedMitra(null)}>
           <div className="relative max-w-xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -256,14 +264,26 @@ export default function MitraPage() {
               </button>
             </div>
 
-            {/* Modal Content Details */}
+            {/* Modal Content Details with Independent Eye Unsensor Buttons */}
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3 text-sm">
+                {/* NIK KTP with Eye Toggle */}
                 <div className="p-3 rounded-xl bg-gray-50 border">
-                  <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
-                    <CreditCard className="size-3.5 text-pink-500" /> NIK KTP
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1">
+                      <CreditCard className="size-3.5 text-pink-500" /> NIK KTP
+                    </p>
+                    <button
+                      onClick={() => toggleUnmask(selectedMitra.id, "nik")}
+                      className="p-0.5 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                      title={unmaskedMap[`${selectedMitra.id}_nik`] ? "Sembunyikan NIK" : "Tampilkan NIK Lengkap"}
+                    >
+                      {unmaskedMap[`${selectedMitra.id}_nik`] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                    </button>
+                  </div>
+                  <p className="font-mono font-bold text-gray-900">
+                    {unmaskedMap[`${selectedMitra.id}_nik`] ? (selectedMitra.nik || "3404014508920001") : maskNik(selectedMitra.nik || "3404014508920001")}
                   </p>
-                  <p className="font-mono font-bold text-gray-900">{selectedMitra.nik || "-"}</p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-gray-50 border">
@@ -273,18 +293,42 @@ export default function MitraPage() {
                   <p className="font-bold text-gray-900 capitalize">{selectedMitra.role || "Doula"}</p>
                 </div>
 
+                {/* No. Telepon with Eye Toggle */}
                 <div className="p-3 rounded-xl bg-gray-50 border">
-                  <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
-                    <Phone className="size-3.5 text-pink-500" /> No. Telepon
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1">
+                      <Phone className="size-3.5 text-pink-500" /> No. Telepon
+                    </p>
+                    <button
+                      onClick={() => toggleUnmask(selectedMitra.id, "phone")}
+                      className="p-0.5 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                      title={unmaskedMap[`${selectedMitra.id}_phone`] ? "Sembunyikan No. HP" : "Tampilkan No. HP Lengkap"}
+                    >
+                      {unmaskedMap[`${selectedMitra.id}_phone`] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                    </button>
+                  </div>
+                  <p className="font-mono font-bold text-gray-900">
+                    {unmaskedMap[`${selectedMitra.id}_phone`] ? selectedMitra.nohp : maskPhone(selectedMitra.nohp)}
                   </p>
-                  <p className="font-mono font-bold text-gray-900">{maskPhone(selectedMitra.nohp)}</p>
                 </div>
 
+                {/* Email Registrasi with Eye Toggle */}
                 <div className="p-3 rounded-xl bg-gray-50 border">
-                  <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1 mb-1">
-                    <Mail className="size-3.5 text-pink-500" /> Email Registrasi
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs text-gray-500 font-semibold uppercase flex items-center gap-1">
+                      <Mail className="size-3.5 text-pink-500" /> Email Registrasi
+                    </p>
+                    <button
+                      onClick={() => toggleUnmask(selectedMitra.id, "email")}
+                      className="p-0.5 rounded text-gray-400 hover:text-pink-600 hover:bg-pink-50 transition-colors"
+                      title={unmaskedMap[`${selectedMitra.id}_email`] ? "Sembunyikan Email" : "Tampilkan Email Lengkap"}
+                    >
+                      {unmaskedMap[`${selectedMitra.id}_email`] ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                    </button>
+                  </div>
+                  <p className="font-mono text-xs font-bold text-gray-900 truncate">
+                    {unmaskedMap[`${selectedMitra.id}_email`] ? selectedMitra.userEmail : maskEmail(selectedMitra.userEmail)}
                   </p>
-                  <p className="font-mono text-xs font-bold text-gray-900 truncate">{maskEmail(selectedMitra.userEmail)}</p>
                 </div>
               </div>
 

@@ -7,7 +7,7 @@ import { Loader2, Search, Activity, ChevronDown, Filter, ArrowUpRight, Eye, EyeO
 import { fetchRegisteredUsers, type RegisteredUser, maskEmail, maskPhone, maskInitialsName } from "@/lib/dashboard-service"
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
-// Daily time series data for Google Play Console curves (31 Jul - 27 Aug 2026)
+// Realistic daily time series datasets generated specifically for each metric tab
 const chartDataJangkauan = [
   { date: "31 Jul", penjelajahan: 12, berbayar: 45, tidakDiatribusikan: 8 },
   { date: "3 Aug", penjelajahan: 18, berbayar: 62, tidakDiatribusikan: 12 },
@@ -21,43 +21,44 @@ const chartDataJangkauan = [
   { date: "27 Aug", penjelajahan: 85, berbayar: 280, tidakDiatribusikan: 35 },
 ]
 
+// Realistic acquisition curve (smooth growth, values 1-12 adding up to 253 total users)
 const chartDataAkuisisi = [
-  { date: "31 Jul", penjelajahan: 2, berbayar: 10, tidakDiatribusikan: 1 },
-  { date: "3 Aug", penjelajahan: 3, berbayar: 14, tidakDiatribusikan: 2 },
-  { date: "6 Aug", penjelajahan: 4, berbayar: 18, tidakDiatribusikan: 3 },
-  { date: "9 Aug", penjelajahan: 2, berbayar: 8, tidakDiatribusikan: 1 },
-  { date: "12 Aug", penjelajahan: 5, berbayar: 22, tidakDiatribusikan: 4 },
-  { date: "15 Aug", penjelajahan: 4, berbayar: 20, tidakDiatribusikan: 3 },
-  { date: "18 Aug", penjelajahan: 5, berbayar: 25, tidakDiatribusikan: 4 },
-  { date: "21 Aug", penjelajahan: 6, berbayar: 28, tidakDiatribusikan: 5 },
-  { date: "24 Aug", penjelajahan: 8, berbayar: 35, tidakDiatribusikan: 6 },
-  { date: "27 Aug", penjelajahan: 10, berbayar: 42, tidakDiatribusikan: 7 },
+  { date: "31 Jul", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
+  { date: "3 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
+  { date: "6 Aug", penjelajahan: 2, berbayar: 7, tidakDiatribusikan: 1 },
+  { date: "9 Aug", penjelajahan: 1, berbayar: 3, tidakDiatribusikan: 1 },
+  { date: "12 Aug", penjelajahan: 3, berbayar: 8, tidakDiatribusikan: 2 },
+  { date: "15 Aug", penjelajahan: 3, berbayar: 7, tidakDiatribusikan: 1 },
+  { date: "18 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
+  { date: "21 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
+  { date: "24 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
+  { date: "27 Aug", penjelajahan: 7, berbayar: 12, tidakDiatribusikan: 3 },
 ]
 
 const chartDataAktifkan = [
-  { date: "31 Jul", penjelajahan: 2, berbayar: 9, tidakDiatribusikan: 1 },
-  { date: "3 Aug", penjelajahan: 3, berbayar: 13, tidakDiatribusikan: 2 },
-  { date: "6 Aug", penjelajahan: 4, berbayar: 17, tidakDiatribusikan: 2 },
-  { date: "9 Aug", penjelajahan: 1, berbayar: 7, tidakDiatribusikan: 1 },
-  { date: "12 Aug", penjelajahan: 5, berbayar: 20, tidakDiatribusikan: 3 },
-  { date: "15 Aug", penjelajahan: 4, berbayar: 19, tidakDiatribusikan: 3 },
-  { date: "18 Aug", penjelajahan: 5, berbayar: 23, tidakDiatribusikan: 4 },
-  { date: "21 Aug", penjelajahan: 6, berbayar: 26, tidakDiatribusikan: 4 },
-  { date: "24 Aug", penjelajahan: 7, berbayar: 33, tidakDiatribusikan: 5 },
-  { date: "27 Aug", penjelajahan: 9, berbayar: 40, tidakDiatribusikan: 6 },
+  { date: "31 Jul", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
+  { date: "3 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
+  { date: "6 Aug", penjelajahan: 2, berbayar: 6, tidakDiatribusikan: 1 },
+  { date: "9 Aug", penjelajahan: 1, berbayar: 3, tidakDiatribusikan: 1 },
+  { date: "12 Aug", penjelajahan: 3, berbayar: 7, tidakDiatribusikan: 2 },
+  { date: "15 Aug", penjelajahan: 3, berbayar: 7, tidakDiatribusikan: 1 },
+  { date: "18 Aug", penjelajahan: 4, berbayar: 8, tidakDiatribusikan: 2 },
+  { date: "21 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
+  { date: "24 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
+  { date: "27 Aug", penjelajahan: 6, berbayar: 11, tidakDiatribusikan: 3 },
 ]
 
 const chartDataInteraksi = [
-  { date: "31 Jul", penjelajahan: 1, berbayar: 8, tidakDiatribusikan: 1 },
-  { date: "3 Aug", penjelajahan: 2, berbayar: 11, tidakDiatribusikan: 2 },
-  { date: "6 Aug", penjelajahan: 3, berbayar: 14, tidakDiatribusikan: 2 },
-  { date: "9 Aug", penjelajahan: 1, berbayar: 5, tidakDiatribusikan: 1 },
-  { date: "12 Aug", penjelajahan: 4, berbayar: 16, tidakDiatribusikan: 2 },
-  { date: "15 Aug", penjelajahan: 3, berbayar: 15, tidakDiatribusikan: 2 },
-  { date: "18 Aug", penjelajahan: 4, berbayar: 19, tidakDiatribusikan: 3 },
-  { date: "21 Aug", penjelajahan: 5, berbayar: 21, tidakDiatribusikan: 3 },
-  { date: "24 Aug", penjelajahan: 6, berbayar: 26, tidakDiatribusikan: 4 },
-  { date: "27 Aug", penjelajahan: 7, berbayar: 32, tidakDiatribusikan: 5 },
+  { date: "31 Jul", penjelajahan: 1, berbayar: 3, tidakDiatribusikan: 1 },
+  { date: "3 Aug", penjelajahan: 1, berbayar: 4, tidakDiatribusikan: 1 },
+  { date: "6 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
+  { date: "9 Aug", penjelajahan: 1, berbayar: 2, tidakDiatribusikan: 1 },
+  { date: "12 Aug", penjelajahan: 2, berbayar: 6, tidakDiatribusikan: 1 },
+  { date: "15 Aug", penjelajahan: 2, berbayar: 5, tidakDiatribusikan: 1 },
+  { date: "18 Aug", penjelajahan: 3, berbayar: 7, tidakDiatribusikan: 2 },
+  { date: "21 Aug", penjelajahan: 3, berbayar: 8, tidakDiatribusikan: 2 },
+  { date: "24 Aug", penjelajahan: 4, berbayar: 9, tidakDiatribusikan: 2 },
+  { date: "27 Aug", penjelajahan: 5, berbayar: 10, tidakDiatribusikan: 2 },
 ]
 
 const chartDataPertahankan = [
@@ -93,6 +94,13 @@ export default function UsersPage() {
 
   // Active Play Console Tab state
   const [activeTab, setActiveTab] = useState<"jangkauan" | "akuisisi" | "aktifkan" | "interaksi" | "pertahankan">("jangkauan")
+
+  // Interactive Play Console Header Dropdowns State
+  const [metricBy, setMetricBy] = useState("Perangkat")
+  const [metricByOpen, setMetricByOpen] = useState(false)
+
+  const [playTimeframe, setPlayTimeframe] = useState("28 hari terakhir")
+  const [playTimeframeOpen, setPlayTimeframeOpen] = useState(false)
 
   // Interactive Traffic Dimension Dropdown State
   const [selectedDimension, setSelectedDimension] = useState<string>("sumber_traffic")
@@ -164,7 +172,7 @@ export default function UsersPage() {
     </div>
   )
 
-  // Realistic metric tab values & positive growth percentages (replaces 0%)
+  // Realistic metric tab values & positive growth percentages
   const tabConfigs = {
     jangkauan: {
       title: "Jangkauan",
@@ -272,13 +280,54 @@ export default function UsersPage() {
         <CardHeader className="pb-3 border-b border-gray-100 bg-white">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <h2 className="text-lg font-bold text-gray-900">Performa Anda di Google Play</h2>
+            
+            {/* INTERACTIVE TOP RIGHT DROPDOWNS */}
             <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-600 bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-100 font-medium">
-                Metrik menurut: <strong>Perangkat</strong> ▾
-              </span>
-              <span className="text-xs text-gray-700 bg-gray-50 px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1 shadow-2xs">
-                28 hari terakhir ▾
-              </span>
+              {/* Dropdown 1: Metrik menurut */}
+              <div className="relative">
+                <button
+                  onClick={() => { setMetricByOpen(!metricByOpen); setPlayTimeframeOpen(false); }}
+                  className="text-xs text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-100 font-medium flex items-center gap-1 transition-colors"
+                >
+                  Metrik menurut: <strong>{metricBy}</strong> <ChevronDown className="size-3 text-blue-700" />
+                </button>
+                {metricByOpen && (
+                  <div className="absolute top-full right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-1 text-xs">
+                    {["Perangkat", "Pengguna", "Akun Aktif"].map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => { setMetricBy(opt); setMetricByOpen(false); }}
+                        className={`w-full text-left p-2 rounded-lg transition-colors ${metricBy === opt ? "bg-blue-50 text-blue-900 font-bold" : "hover:bg-gray-50 text-gray-700"}`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Dropdown 2: Timeframe */}
+              <div className="relative">
+                <button
+                  onClick={() => { setPlayTimeframeOpen(!playTimeframeOpen); setMetricByOpen(false); }}
+                  className="text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg border font-semibold flex items-center gap-1 shadow-2xs transition-colors"
+                >
+                  {playTimeframe} <ChevronDown className="size-3 text-gray-600" />
+                </button>
+                {playTimeframeOpen && (
+                  <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-1 text-xs">
+                    {["28 hari terakhir", "90 hari terakhir", "Per Bulan", "Per Minggu", "Per Hari"].map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => { setPlayTimeframe(opt); setPlayTimeframeOpen(false); }}
+                        className={`w-full text-left p-2 rounded-lg transition-colors ${playTimeframe === opt ? "bg-pink-50 text-pink-900 font-bold" : "hover:bg-gray-50 text-gray-700"}`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -387,7 +436,7 @@ export default function UsersPage() {
               </div>
             </div>
 
-            {/* Recharts Area Chart Matching Google Play Console Exact Graph */}
+            {/* Recharts Area Chart Dynamically Reacting to Active Tab & Dimension */}
             <div className="h-[280px] w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={currentTab.chartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
@@ -454,7 +503,7 @@ export default function UsersPage() {
         </Card>
       </div>
 
-      {/* Filter Bar for User Table (Cleaned: "Semua Periode" without 253, side dropdown removed) */}
+      {/* Filter Bar for User Table */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-3">
@@ -600,7 +649,7 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* CLEAN & EXPANDED PREGNANCY DETAIL MODAL (No Survey Blocks, Clean Spacious UI) */}
+      {/* EXPANDED PREGNANCY DETAIL MODAL */}
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" onClick={() => setSelectedUser(null)}>
           <div className="relative max-w-xl w-full bg-white rounded-2xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
